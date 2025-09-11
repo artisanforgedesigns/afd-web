@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="POST" action="/save_settings">
+    <!-- Device Accounts Side by Side -->
+    <div class="settings-layout">
+        <div class="section">
+            <h3>🔘 Switchbot Account</h3>
+            <div class="form-group">
+                <label for="switchbot_token">Token:</label>
+                <input type="text" id="switchbot_token" name="switchbot_token" 
+                       value="{{ settings.get('switchbot', {}).get('token', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="switchbot_secret">Secret:</label>
+                <input type="text" id="switchbot_secret" name="switchbot_secret" 
+                       value="{{ settings.get('switchbot', {}).get('secret', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="switchbot_device_1_id">Device 1 ID:</label>
+                <input type="text" id="switchbot_device_1_id" name="switchbot_device_1_id" 
+                       value="{{ settings.get('switchbot', {}).get('device_1_id', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="switchbot_device_2_id">Device 2 ID:</label>
+                <input type="text" id="switchbot_device_2_id" name="switchbot_device_2_id" 
+                       value="{{ settings.get('switchbot', {}).get('device_2_id', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="switchbot_device_3_id">Device 3 ID:</label>
+                <input type="text" id="switchbot_device_3_id" name="switchbot_device_3_id" 
+                       value="{{ settings.get('switchbot', {}).get('device_3_id', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="switchbot_device_4_id">Device 4 ID:</label>
+                <input type="text" id="switchbot_device_4_id" name="switchbot_device_4_id" 
+                       value="{{ settings.get('switchbot', {}).get('device_4_id', '') }}">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>⚡ Haptic Account</h3>
+            <div class="form-group">
+                <label for="pishock_username">Username:</label>
+                <input type="text" id="pishock_username" name="pishock_username" 
+                       value="{{ settings.get('pishock', {}).get('username', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="pishock_api_key">API Key:</label>
+                <input type="text" id="pishock_api_key" name="pishock_api_key" 
+                       value="{{ settings.get('pishock', {}).get('api_key', '') }}" required>
+            </div>
+            <div class="form-group">
+                <label for="pishock_sharecode_1">Sharecode 1:</label>
+                <input type="text" id="pishock_sharecode_1" name="pishock_sharecode_1" 
+                       value="{{ settings.get('pishock', {}).get('sharecode_1', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="pishock_sharecode_2">Sharecode 2:</label>
+                <input type="text" id="pishock_sharecode_2" name="pishock_sharecode_2" 
+                       value="{{ settings.get('pishock', {}).get('sharecode_2', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="pishock_sharecode_3">Sharecode 3:</label>
+                <input type="text" id="pishock_sharecode_3" name="pishock_sharecode_3" 
+                       value="{{ settings.get('pishock', {}).get('sharecode_3', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="pishock_sharecode_4">Sharecode 4:</label>
+                <input type="text" id="pishock_sharecode_4" name="pishock_sharecode_4" 
+                       value="{{ settings.get('pishock', {}).get('sharecode_4', '') }}">
+            </div>
+        </div>
+    </div>
+    
+    <!-- AFD MagLock Device -->
+    <div class="section">
+        <h3>🔒 AFD MAGLOCK DEVICE</h3>
+        <div class="form-group maglock-form-group">
+            <label for="lock_engage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Lock:</label>
+            <input type="url" id="lock_engage_webhook" name="lock_engage_webhook" 
+                   value="{{ settings.get('lock', {}).get('engage_webhook', '') }}" 
+                   placeholder="https://us-apia.coolkit.cc/v2/">
+        </div>
+        <div class="form-group maglock-form-group">
+            <label for="lock_disengage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Unlock:</label>
+            <input type="url" id="lock_disengage_webhook" name="lock_disengage_webhook" 
+                   value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}" 
+                   placeholder="https://us-apia.coolkit.cc/v2/">
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">💾 SAVE SETTINGS</button>
+</form>
+{% endblock %}

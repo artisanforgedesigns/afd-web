@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <!-- Status Feed -->
+    <div class="status-feed-container">
+        <div class="section">
+            <h3>🔥 LIVE STATUS FEED</h3>
+            <div class="status-feed" id="status-feed">
+                <div id="status-messages">NO ACTIVITY YET...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scene Configuration -->
+    <div class="scene-config-container">
+        <div class="section scene-config-section">
+            <h3>⏱️ SCENE CONFIG</h3>
+            <form method="POST" action="/save_scene_config" id="scene-config-form">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Scene runtime - enter fixed minutes (e.g., '5') or range (e.g., '2-10') for random selection">Duration:</label>
+                    <input type="text" name="scene_duration" class="narrow-input" pattern="[0-9\-]*"
+                           value="{% if scene_state.scene_duration_type == 'fixed' %}{{ scene_state.scene_duration_fixed }}{% else %}{{ scene_state.scene_duration_random_min }}-{{ scene_state.scene_duration_random_max }}{% endif %}" 
+                           placeholder="">
+                </div>
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Minutes to wait before starting device triggers (0 for immediate start)">Delay:</label>
+                    <input type="text" name="initial_delay" class="narrow-input" pattern="[0-9]*" 
+                           value="{{ scene_state.initial_delay // 60 }}" placeholder="0">
+                </div>
+            </form>
+            
+            <!-- Status Display within Scene Config -->
+            <div class="scene-status-display">
+                <div class="status-compact {% if status.status == 'Running' %}running{% else %}idle{% endif %}" id="scene-status">
+                    ⚡ {{ status.status }}
+                    {% if status.status == 'Running' %}
+                    - {{ status.remaining_minutes }}:{{ '%02d'|format(status.remaining_seconds) }} LEFT
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Device Controls -->
+<div class="device-controls">
+
+    <!-- Haptic Devices -->
+    <div class="device-tabs" data-tab-group="pishock">
+        <div class="tab-nav">
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-1')">⚡ HAPTIC 1</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-2')">⚡ HAPTIC 2</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-3')">⚡ HAPTIC 3</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-4')">⚡ HAPTIC 4</button>
+        </div>
+        
+        {% for i in range(1, 5) %}
+        <div id="pishock-{{ i }}" class="tab-content">
+            <div class="device-header">
+                <h3>⚡ HAPTIC {{ i }}</h3>
+                <label class="enable-checkbox">
+                    <input type="checkbox" name="pishock_{{ i }}_enabled" form="scene-config-form"
+                           {% if scene_state.get('pishock_' + i|string + '_enabled', False) %}checked{% endif %}> 
+                    ENABLE
+                </label>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Time between activations - enter fixed seconds (e.g., '5') or range (e.g., '2-10')">Interval:</label>
+                    <input type="text" name="pishock_{{ i }}_interval" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                           value="{% if scene_state.get('pishock_' + i|string + '_interval_type', 'fixed') == 'fixed' %}{{ scene_state.get('pishock_' + i|string + '_interval_fixed', 5) }}{% else %}{{ scene_state.get('pishock_' + i|string + '_interval_random_min', 2) }}-{{ scene_state.get('pishock_' + i|string + '_interval_random_max', 10) }}{% endif %}" 
+                           placeholder="">
+                </div>
+                
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Shock intensity level (1-100) - enter fixed value (e.g., '25') or range (e.g., '10-50')">Strength:</label>
+                    <input type="text" name="pishock_{{ i }}_intensity" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                           value="{% if scene_state.get('pishock_' + i|string + '_intensity_type', 'fixed') == 'fixed' %}{{ scene_state.get('pishock_' + i|string + '_intensity_fixed', 25) }}{% else %}{{ scene_state.get('pishock_' + i|string + '_intensity_random_min', 10) }}-{{ scene_state.get('pishock_' + i|string + '_intensity_random_max', 50) }}{% endif %}" 
+                           placeholder="">
+                </div>
+                
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Maximum activations during scene - leave empty for unlimited, or use range for random count">Repeat:</label>
+                    <input type="text" name="pishock_{{ i }}_repeat" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                           value="{{ scene_state.get('pishock_' + i|string + '_repeat', '') }}" 
+                           placeholder="">
+                </div>
+                
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="How long each shock lasts in seconds - enter fixed value (e.g., '1') or range (e.g., '1-3')">Duration:</label>
+                    <input type="text" name="pishock_{{ i }}_duration" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                           value="{% if scene_state.get('pishock_' + i|string + '_duration_type', 'fixed') == 'fixed' %}{{ scene_state.get('pishock_' + i|string + '_duration_fixed', 1) }}{% else %}{{ scene_state.get('pishock_' + i|string + '_duration_random_min', 1) }}-{{ scene_state.get('pishock_' + i|string + '_duration_random_max', 3) }}{% endif %}" 
+                           placeholder="">
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Bot Devices -->
+    <div class="device-tabs" data-tab-group="switchbot">
+        <div class="tab-nav">
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-1')">🔘 BOT 1</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-2')">🔘 BOT 2</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-3')">🔘 BOT 3</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-4')">🔘 BOT 4</button>
+        </div>
+        
+        {% for i in range(1, 5) %}
+        <div id="switchbot-{{ i }}" class="tab-content">
+            <div class="device-header">
+                <h3>🔘 BOT {{ i }}</h3>
+                <label class="enable-checkbox">
+                    <input type="checkbox" name="switchbot_{{ i }}_enabled" form="scene-config-form"
+                           {% if scene_state.get('switchbot_' + i|string + '_enabled', False) %}checked{% endif %}> 
+                    ENABLE
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label class="tooltip" data-tooltip="Time between button presses in seconds - enter fixed value (e.g., '5') or range (e.g., '2-10')">Interval:</label>
+                <input type="text" name="switchbot_{{ i }}_interval" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                       value="{% if scene_state.get('switchbot_' + i|string + '_interval_type', 'fixed') == 'fixed' %}{{ scene_state.get('switchbot_' + i|string + '_interval_fixed', 5) }}{% else %}{{ scene_state.get('switchbot_' + i|string + '_interval_random_min', 2) }}-{{ scene_state.get('switchbot_' + i|string + '_interval_random_max', 10) }}{% endif %}" 
+                       placeholder="">
+            </div>
+            
+            <div class="form-group">
+                <label class="tooltip" data-tooltip="Maximum button presses during scene - leave empty for unlimited, or use range for random count">Repeat:</label>
+                <input type="text" name="switchbot_{{ i }}_repeat" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                       value="{{ scene_state.get('switchbot_' + i|string + '_repeat', '') }}" 
+                       placeholder="">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Control Buttons -->
+<div class="control-buttons">
+    <div class="control-panel">
+        <button type="submit" form="scene-config-form" class="btn btn-primary">💾 SAVE</button>
+        
+        <form method="POST" action="/start_scene" class="inline-form">
+            <button type="submit" class="btn btn-success" {% if status.status == 'Running' %}disabled{% endif %}>
+                🚀 RUN
+            </button>
+        </form>
+        
+        <form method="POST" action="/stop_scene" class="inline-form">
+            <button type="submit" class="btn btn-danger" {% if status.status == 'Idle' %}disabled{% endif %}>
+                🛑 STOP
+            </button>
+        </form>
+        
+        <form method="POST" action="/reset_config" class="inline-form">
+            <button type="submit" class="btn btn-secondary">
+                🔄 RESET
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updateStatus() {
+        fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                
+                // Update scene status display
+                const sceneStatusDiv = document.querySelector('#scene-status');
+                if (sceneStatusDiv) {
+                    // Set CSS class based on status
+                    if (data.status === 'Running') {
+                        sceneStatusDiv.className = 'status-compact running';
+                    } else if (data.status === 'Waiting') {
+                        sceneStatusDiv.className = 'status-compact waiting';
+                    } else {
+                        sceneStatusDiv.className = 'status-compact idle';
+                    }
+                    
+                    if (data.status === 'Running' || data.status === 'Waiting') {
+                        const statusIcon = data.status === 'Waiting' ? '⏳' : '⚡';
+                        sceneStatusDiv.innerHTML = `${statusIcon} ${data.status} - ${data.remaining_minutes}:${data.remaining_seconds.toString().padStart(2, '0')} LEFT`;
+                    } else {
+                        sceneStatusDiv.innerHTML = `⚡ ${data.status}`;
+                    }
+                }
+                
+                // Update button states
+                const startBtn = document.querySelector('.btn-success');
+                const stopBtn = document.querySelector('.btn-danger');
+                
+                if (startBtn) startBtn.disabled = (data.status === 'Running' || data.status === 'Waiting');
+                if (stopBtn) stopBtn.disabled = data.status === 'Idle';
+            });
+    }
+    
+    let userScrolled = false;
+    let scrollTimeout = null;
+    
+    function updateStatusMessages() {
+        fetch('/status_messages')
+            .then(response => response.json())
+            .then(messages => {
+                const messagesDiv = document.getElementById('status-messages');
+                const statusFeed = document.querySelector('.status-feed');
+                
+                if (messages.length === 0) {
+                    messagesDiv.textContent = 'NO ACTIVITY YET...';
+                } else {
+                    // Store current scroll position and whether user was at bottom
+                    const wasAtBottom = statusFeed.scrollTop >= (statusFeed.scrollHeight - statusFeed.clientHeight - 5);
+                    
+                    messagesDiv.innerHTML = messages.map(msg => `<div>${msg}</div>`).join('');
+                    
+                    // Only auto-scroll if user was at bottom or hasn't manually scrolled recently
+                    if (wasAtBottom || !userScrolled) {
+                        statusFeed.scrollTo({
+                            top: statusFeed.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+    }
+    
+    // Track user scrolling to prevent auto-scroll interference
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusFeed = document.querySelector('.status-feed');
+        if (statusFeed) {
+            statusFeed.addEventListener('scroll', function() {
+                const isAtBottom = this.scrollTop >= (this.scrollHeight - this.clientHeight - 5);
+                
+                if (!isAtBottom) {
+                    userScrolled = true;
+                    
+                    // Clear existing timeout
+                    if (scrollTimeout) {
+                        clearTimeout(scrollTimeout);
+                    }
+                    
+                    // Reset user scroll flag after 3 seconds of no scrolling
+                    scrollTimeout = setTimeout(() => {
+                        userScrolled = false;
+                    }, 3000);
+                } else {
+                    userScrolled = false;
+                }
+            });
+        }
+    });
+    
+    // Update every second
+    setInterval(updateStatus, 1000);
+    setInterval(updateStatusMessages, 1000);
+    
+    // Initial load
+    updateStatusMessages();
+</script>
+{% endblock %}

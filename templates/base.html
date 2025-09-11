@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFD Web</title>
+    
+    <!-- Favicon for all browsers -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="shortcut icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    
+    <!-- Apple Touch Icon for iOS Safari -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.svg') }}">
+    
+    <!-- Additional favicon sizes for better compatibility -->
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ url_for('static', filename='favicon.svg') }}">
+    <style>
+        /* Neobrutalist Design System */
+        :root {
+            --primary: #FF6B35;
+            --secondary: #F7931E;
+            --accent: #FFE66D;
+            --dark: #1B1B1B;
+            --light: #FFFFFF;
+            --gray: #E0E0E0;
+            --success: #4ECDC4;
+            --danger: #FF5722;
+            --shadow: 6px 6px 0px;
+            --border: 4px solid;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #FFE66D 0%, #FF6B35 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            font-weight: 700;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--light);
+            border: var(--border) var(--dark);
+            box-shadow: var(--shadow) var(--dark);
+            padding: 30px;
+            position: relative;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: var(--border) var(--dark);
+        }
+        
+        .app-name {
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            flex: 0 0 auto;
+        }
+        
+        .app-name:hover {
+            color: var(--secondary);
+            transform: scale(1.05);
+        }
+        
+        
+        .status-compact {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 2px solid var(--dark);
+            border-radius: 8px;
+            min-width: 200px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status-compact.running {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .status-compact.waiting {
+            background: var(--secondary);
+            color: var(--light);
+        }
+        
+        .status-compact.idle {
+            background: var(--gray);
+            color: var(--dark);
+        }
+        
+        .toolbar-actions {
+            display: flex;
+            gap: 15px;
+            flex: 0 0 auto;
+        }
+        
+        /* Dashboard Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            grid-template-rows: 355px;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .status-feed-container {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        
+        .scene-config-container {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .scene-config-section {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .scene-status-display {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+        
+        .scene-status-display .status-compact {
+            margin: 0;
+        }
+        
+        .device-controls {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+        
+        .control-buttons {
+            margin-top: 25px;
+        }
+        
+        /* Settings Layout */
+        .settings-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        /* Settings page specific form groups with wider labels */
+        .settings-layout .form-group {
+            grid-template-columns: 140px 1fr;
+            gap: 20px;
+        }
+        
+        /* AFD MAGLOCK section form groups */
+        .maglock-form-group {
+            grid-template-columns: 80px 1fr !important;
+            gap: 20px;
+        }
+        
+        /* Device Headers */
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .device-header h3 {
+            margin: 0;
+        }
+        
+        .enable-checkbox {
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .enable-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+        
+        /* Narrow Input Styling */
+        .narrow-input {
+            width: 80px !important;
+            min-width: 80px !important;
+            text-align: center;
+        }
+        
+        /* Status Display */
+        .status {
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border: var(--border) var(--dark);
+            box-shadow: var(--shadow) var(--dark);
+            position: relative;
+        }
+        
+        .status.running {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .status.idle {
+            background: var(--gray);
+            color: var(--dark);
+        }
+        
+        /* Section Styling */
+        .section {
+            border: var(--border) var(--dark);
+            background: var(--light);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow) var(--dark);
+            position: relative;
+        }
+        
+        .section h3 {
+            margin: 0 0 20px 0;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+        
+        /* Tabbed Device Sections */
+        .device-tabs {
+            background: var(--light);
+            border: var(--border) var(--dark);
+            box-shadow: var(--shadow) var(--dark);
+            margin-bottom: 25px;
+            overflow: visible;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab-nav {
+            display: flex;
+            background: var(--dark);
+            flex-wrap: wrap;
+        }
+        
+        .tab-button {
+            background: var(--dark);
+            color: var(--light);
+            border: none;
+            padding: 15px 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            flex: 1;
+            min-width: 120px;
+            border-right: 2px solid var(--light);
+            transition: all 0.2s;
+        }
+        
+        .tab-button:last-child {
+            border-right: none;
+        }
+        
+        .tab-button.active {
+            background: var(--primary);
+            color: var(--light);
+        }
+        
+        .tab-button:hover:not(.active) {
+            background: var(--secondary);
+        }
+        
+        .tab-content {
+            padding: 25px;
+            display: none;
+            flex: 1;
+            overflow: visible;
+            position: relative;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-grid .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--dark);
+            text-align: left;
+        }
+        
+        .form-group input, .form-group select {
+            border: 3px solid var(--dark);
+            padding: 10px;
+            font-weight: 700;
+            background: var(--light);
+            box-shadow: 2px 2px 0px var(--dark);
+            transition: all 0.2s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 4px 4px 0px var(--dark);
+            transform: translate(-2px, -2px);
+        }
+        
+        .form-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+        
+        .form-group input[type="text"], .form-group input[type="number"] {
+            width: auto;
+            min-width: 80px;
+        }
+        
+        .form-group input:disabled, .form-group select:disabled {
+            opacity: 0.5;
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .form-group label.disabled {
+            opacity: 0.5;
+            color: #999;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 15px 50px;
+            border: var(--border) var(--dark);
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin: 5px;
+            box-shadow: var(--shadow) var(--dark);
+            transition: all 0.2s;
+            position: relative;
+            min-width: 120px;
+        }
+        
+        .btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--dark);
+        }
+        
+        .btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--dark);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--light);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: var(--light);
+        }
+        
+        .btn-secondary {
+            background: var(--gray);
+            color: var(--dark);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow) var(--dark);
+        }
+        
+        /* Status Feed */
+        .status-feed {
+            background: var(--dark);
+            color: var(--accent);
+            border: var(--border) var(--dark);
+            box-shadow: inset 4px 4px 0px rgba(0,0,0,0.2);
+            padding: 20px;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 1.4;
+            scroll-behavior: smooth;
+        }
+        
+        .status-feed::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .status-feed::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+        
+        .status-feed::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border: 2px solid var(--dark);
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background: var(--dark);
+            color: var(--accent);
+            padding: 10px 15px;
+            border: 2px solid var(--primary);
+            font-size: 12px;
+            white-space: normal;
+            max-width: 300px;
+            width: max-content;
+            z-index: 9999;
+            font-weight: 700;
+            box-shadow: 4px 4px 0px var(--primary);
+            border-radius: 4px;
+            
+            /* Dynamic positioning */
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+        }
+        
+        .tooltip:hover::before {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--dark);
+            z-index: 9999;
+        }
+        
+        /* Right-aligned tooltips for elements near left edge */
+        .tooltip.tooltip-right:hover::after {
+            left: 0%;
+            transform: none;
+            max-width: 280px;
+        }
+        
+        .tooltip.tooltip-right:hover::before {
+            left: 20px;
+            transform: none;
+        }
+        
+        /* Left-aligned tooltips for elements near right edge */
+        .tooltip.tooltip-left:hover::after {
+            right: 0%;
+            left: auto;
+            transform: none;
+            max-width: 280px;
+        }
+        
+        .tooltip.tooltip-left:hover::before {
+            right: 20px;
+            left: auto;
+            transform: none;
+        }
+        
+        /* Bottom tooltips for elements near top of screen */
+        .tooltip.tooltip-bottom:hover::after {
+            bottom: auto;
+            top: 100%;
+            margin-bottom: 0;
+            margin-top: 8px;
+        }
+        
+        .tooltip.tooltip-bottom:hover::before {
+            bottom: auto;
+            top: 100%;
+            border-top-color: transparent;
+            border-bottom-color: var(--dark);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .status-feed-container,
+            .scene-config-container {
+                grid-column: 1;
+            }
+            
+            .scene-config-container {
+                grid-row: 2;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .toolbar {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .toolbar-status {
+                flex: none;
+            }
+            
+            .device-controls {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .toolbar-status {
+                order: -1;
+            }
+            
+            .toolbar-actions {
+                order: 2;
+            }
+            
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+                gap: 20px;
+            }
+            
+            .status-feed-container {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .scene-config-container {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .device-controls {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .settings-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button {
+                padding: 12px 15px;
+                font-size: 12px;
+                min-width: 100px;
+            }
+            
+            .form-group {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                text-align: left;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .form-group label {
+                text-align: left;
+            }
+            
+            .control-panel {
+                gap: 10px;
+                flex-direction: column;
+            }
+            
+            .control-panel .btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .btn {
+                padding: 15px 20px;
+                font-size: 14px;
+            }
+            
+            .app-name {
+                font-size: 24px;
+            }
+            
+            .status-feed {
+                height: 200px;
+                font-size: 12px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .section h3 {
+                font-size: 22px;
+            }
+            
+            .narrow-input {
+                width: 100px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .toolbar {
+                padding: 15px 0;
+            }
+            
+            .app-name {
+                font-size: 20px;
+            }
+            
+            .status-compact {
+                font-size: 14px;
+                padding: 10px 15px;
+                min-width: 150px;
+            }
+            
+            .section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .section h3 {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+            
+            .status-feed {
+                height: 150px;
+                font-size: 11px;
+                padding: 15px;
+            }
+            
+            .tab-nav {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                border-right: none;
+                border-bottom: 2px solid var(--light);
+                padding: 10px 15px;
+                font-size: 11px;
+                min-width: auto;
+            }
+            
+            .tab-button:last-child {
+                border-bottom: none;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .device-header h3 {
+                font-size: 18px;
+            }
+            
+            .enable-checkbox {
+                font-size: 12px;
+                gap: 6px;
+            }
+            
+            .form-group input, .form-group select {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .narrow-input {
+                width: 80px !important;
+                min-width: 80px !important;
+            }
+            
+            .btn {
+                padding: 12px 15px;
+                font-size: 12px;
+                margin: 3px;
+            }
+            
+            .control-panel {
+                gap: 8px;
+            }
+            
+            .tooltip:hover::after {
+                font-size: 10px;
+                padding: 8px 12px;
+                min-width: 150px;
+                left: -50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Toolbar -->
+        <div class="toolbar">
+            <a href="/" class="app-name">⚡ AFD WEB</a>
+            <div class="toolbar-actions">
+                <a href="/settings" class="btn btn-secondary">SETTINGS</a>
+            </div>
+        </div>
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script>
+        // Tab switching functionality
+        function switchTab(tabGroup, activeTabId) {
+            // Hide all tab contents in the group
+            const tabContents = document.querySelectorAll(`[data-tab-group="${tabGroup}"] .tab-content`);
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tab buttons in the group
+            const tabButtons = document.querySelectorAll(`[data-tab-group="${tabGroup}"] .tab-button`);
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            // Show the selected tab content
+            const activeContent = document.getElementById(activeTabId);
+            if (activeContent) {
+                activeContent.classList.add('active');
+            }
+            
+            // Activate the clicked tab button
+            const activeButton = document.querySelector(`[data-tab-group="${tabGroup}"] .tab-button[onclick*="${activeTabId}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+        
+        // Toggle form fields based on enable checkbox
+        function toggleDeviceFields(deviceType, deviceNumber) {
+            const checkbox = document.querySelector(`input[name="${deviceType}_${deviceNumber}_enabled"]`);
+            const tabContent = document.getElementById(`${deviceType}-${deviceNumber}`);
+            
+            if (checkbox && tabContent) {
+                const inputs = tabContent.querySelectorAll('input[type="text"]:not([name*="_enabled"])');
+                const labels = tabContent.querySelectorAll('label:not(.enable-checkbox)');
+                
+                inputs.forEach(input => {
+                    input.disabled = !checkbox.checked;
+                });
+                
+                labels.forEach(label => {
+                    if (checkbox.checked) {
+                        label.classList.remove('disabled');
+                    } else {
+                        label.classList.add('disabled');
+                    }
+                });
+            }
+        }
+        
+        // Initialize tabs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Activate first tab in each group by default
+            const tabGroups = document.querySelectorAll('[data-tab-group]');
+            const processedGroups = new Set();
+            
+            tabGroups.forEach(group => {
+                const groupName = group.getAttribute('data-tab-group');
+                if (!processedGroups.has(groupName)) {
+                    processedGroups.add(groupName);
+                    const firstTab = group.querySelector('.tab-content');
+                    const firstButton = group.querySelector('.tab-button');
+                    if (firstTab && firstButton) {
+                        firstTab.classList.add('active');
+                        firstButton.classList.add('active');
+                    }
+                }
+            });
+            
+            // Setup enable/disable functionality for all devices
+            ['pishock', 'switchbot'].forEach(deviceType => {
+                for (let i = 1; i <= 4; i++) {
+                    const checkbox = document.querySelector(`input[name="${deviceType}_${i}_enabled"]`);
+                    if (checkbox) {
+                        // Set initial state
+                        toggleDeviceFields(deviceType, i);
+                        
+                        // Add change listener
+                        checkbox.addEventListener('change', function() {
+                            toggleDeviceFields(deviceType, i);
+                        });
+                    }
+                }
+            });
+            
+            // Setup smart tooltip positioning
+            setupSmartTooltips();
+        });
+        
+        // Smart tooltip positioning system
+        function setupSmartTooltips() {
+            const tooltips = document.querySelectorAll('.tooltip');
+            
+            tooltips.forEach(tooltip => {
+                tooltip.addEventListener('mouseenter', function() {
+                    // Remove any existing positioning classes
+                    this.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-bottom');
+                    
+                    // Wait two frames to let the tooltip render and measure properly
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            const rect = this.getBoundingClientRect();
+                            const viewportWidth = window.innerWidth;
+                            const viewportHeight = window.innerHeight;
+                            const tooltipWidth = 300; // max-width from CSS
+                            
+                            // Calculate center position
+                            const centerX = rect.left + (rect.width / 2);
+                            const tooltipLeft = centerX - (tooltipWidth / 2);
+                            const tooltipRight = centerX + (tooltipWidth / 2);
+                            
+                            // Check horizontal positioning
+                            if (tooltipRight > viewportWidth - 10) {
+                                // Tooltip goes off right edge - align to right
+                                this.classList.add('tooltip-left');
+                            } else if (tooltipLeft < 10) {
+                                // Tooltip goes off left edge - align to left  
+                                this.classList.add('tooltip-right');
+                            }
+                            
+                            // Check vertical positioning
+                            if (rect.top < 70) {
+                                // Tooltip would go off top edge - show below
+                                this.classList.add('tooltip-bottom');
+                            }
+                        });
+                    });
+                });
+                
+                tooltip.addEventListener('mouseleave', function() {
+                    // Clean up positioning classes when mouse leaves
+                    this.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-bottom');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

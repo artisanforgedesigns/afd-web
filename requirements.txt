@@ -1,0 +1,3 @@
+Flask==2.3.3
+pishock==1.2.0
+python-switchbot==2.3.1
