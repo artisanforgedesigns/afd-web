@@ -787,12 +787,17 @@
             margin-top: 30px;
             padding: 20px 0;
             border-top: var(--border) var(--dark);
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             align-items: center;
             font-weight: 700;
             text-transform: uppercase;
             color: var(--dark);
+            gap: 15px;
+        }
+        
+        .footer-center {
+            text-align: center;
         }
         
         .footer-brand {
@@ -805,11 +810,12 @@
             font-size: 14px;
             color: var(--secondary);
             font-family: 'Courier New', monospace;
+            text-align: right;
         }
         
         @media (max-width: 768px) {
             .footer {
-                flex-direction: column;
+                grid-template-columns: 1fr;
                 gap: 10px;
                 text-align: center;
             }
@@ -830,7 +836,7 @@
         <div class="toolbar">
             <a href="/" class="app-name">⚡ PiLock</a>
             <div class="toolbar-actions">
-                <a href="/settings" class="btn btn-secondary">SETTINGS</a>
+                <a href="/settings" class="btn btn-secondary">⚙️ SETTINGS</a>
             </div>
         </div>
         
@@ -839,6 +845,9 @@
         <!-- Footer -->
         <div class="footer">
             <div class="footer-brand">ArtisanForgeDesigns - 2025</div>
+            <div class="footer-center">
+                <a href="https://artisanforgedesigns.github.io/afd-web/" target="_blank" style="color: var(--primary); text-decoration: underline;">User Guide</a>
+            </div>
             <div class="footer-version">Version {{ version }}</div>
         </div>
     </div>
