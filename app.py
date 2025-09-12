@@ -5,6 +5,7 @@ import time
 import threading
 import random
 import requests
+import argparse
 from datetime import datetime, timedelta
 from pishock import PiShockAPI
 from switchbot import SwitchBot
@@ -680,4 +681,8 @@ def run_scene():
         add_status_message("Scene stopped")
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    parser = argparse.ArgumentParser(description='PiLock Web Application')
+    parser.add_argument('--port', type=int, default=5001, help='Port to run the server on (default: 5001)')
+    args = parser.parse_args()
+    
+    app.run(debug=True, host='0.0.0.0', port=args.port)
