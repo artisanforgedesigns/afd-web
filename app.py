@@ -23,6 +23,7 @@ os.makedirs('data', exist_ok=True)
 scene_thread = None
 scene_active = False
 scene_end_time = None
+scene_delay_end_time = None  # When delay phase ends
 scene_in_delay = False  # Track if scene is in initial delay phase
 scene_execution_start_time = None  # When actual scene execution starts
 status_messages = deque(maxlen=50)  # Keep last 50 status messages
@@ -74,70 +75,106 @@ def load_scene_state():
     # Create default scene state file if it doesn't exist
     default_scene_state = {
         'scene_duration_type': 'fixed',
-        'scene_duration_fixed': 10,
+        'scene_duration_fixed': 5,
         'scene_duration_random_min': 2,
-        'scene_duration_random_max': 20,
-        'initial_delay': 0,
-        'pishock_1_enabled': False,
-        'pishock_1_interval_type': 'fixed',
+        'scene_duration_random_max': 10,
+        'initial_delay': 60,
+        'pishock_1_enabled': True,
+        'pishock_1_interval_type': 'random',
         'pishock_1_interval_fixed': 5,
-        'pishock_1_interval_random_min': 2,
-        'pishock_1_interval_random_max': 10,
+        'pishock_1_interval_random_min': 15,
+        'pishock_1_interval_random_max': 60,
         'pishock_1_repeat': '',
-        'pishock_1_intensity': 25,
-        'pishock_1_duration': 1,
+        'pishock_1_intensity_type': 'random',
+        'pishock_1_intensity_fixed': 25,
+        'pishock_1_intensity_random_min': 5,
+        'pishock_1_intensity_random_max': 25,
+        'pishock_1_duration_type': 'fixed',
+        'pishock_1_duration_fixed': 1,
+        'pishock_1_duration_random_min': 1,
+        'pishock_1_duration_random_max': 3,
         'pishock_2_enabled': False,
         'pishock_2_interval_type': 'fixed',
         'pishock_2_interval_fixed': 5,
         'pishock_2_interval_random_min': 2,
         'pishock_2_interval_random_max': 10,
         'pishock_2_repeat': '',
-        'pishock_2_intensity': 25,
-        'pishock_2_duration': 1,
+        'pishock_2_intensity_type': 'fixed',
+        'pishock_2_intensity_fixed': 25,
+        'pishock_2_intensity_random_min': 10,
+        'pishock_2_intensity_random_max': 50,
+        'pishock_2_duration_type': 'fixed',
+        'pishock_2_duration_fixed': 1,
+        'pishock_2_duration_random_min': 1,
+        'pishock_2_duration_random_max': 3,
         'pishock_3_enabled': False,
         'pishock_3_interval_type': 'fixed',
         'pishock_3_interval_fixed': 5,
         'pishock_3_interval_random_min': 2,
         'pishock_3_interval_random_max': 10,
         'pishock_3_repeat': '',
-        'pishock_3_intensity': 25,
-        'pishock_3_duration': 1,
+        'pishock_3_intensity_type': 'fixed',
+        'pishock_3_intensity_fixed': 25,
+        'pishock_3_intensity_random_min': 10,
+        'pishock_3_intensity_random_max': 50,
+        'pishock_3_duration_type': 'fixed',
+        'pishock_3_duration_fixed': 1,
+        'pishock_3_duration_random_min': 1,
+        'pishock_3_duration_random_max': 3,
         'pishock_4_enabled': False,
         'pishock_4_interval_type': 'fixed',
         'pishock_4_interval_fixed': 5,
         'pishock_4_interval_random_min': 2,
         'pishock_4_interval_random_max': 10,
         'pishock_4_repeat': '',
-        'pishock_4_intensity': 25,
-        'pishock_4_duration': 1,
-        'switchbot_1_enabled': False,
-        'switchbot_1_interval_type': 'fixed',
+        'pishock_4_intensity_type': 'fixed',
+        'pishock_4_intensity_fixed': 25,
+        'pishock_4_intensity_random_min': 10,
+        'pishock_4_intensity_random_max': 50,
+        'pishock_4_duration_type': 'fixed',
+        'pishock_4_duration_fixed': 1,
+        'pishock_4_duration_random_min': 1,
+        'pishock_4_duration_random_max': 3,
+        'switchbot_1_enabled': True,
+        'switchbot_1_interval_type': 'random',
         'switchbot_1_interval_fixed': 5,
-        'switchbot_1_interval_random_min': 2,
-        'switchbot_1_interval_random_max': 10,
+        'switchbot_1_interval_random_min': 15,
+        'switchbot_1_interval_random_max': 60,
         'switchbot_1_repeat': '',
-        'switchbot_1_duration': 1,
+        'switchbot_1_duration_type': 'fixed',
+        'switchbot_1_duration_fixed': 1,
+        'switchbot_1_duration_random_min': 1,
+        'switchbot_1_duration_random_max': 3,
         'switchbot_2_enabled': False,
         'switchbot_2_interval_type': 'fixed',
         'switchbot_2_interval_fixed': 5,
         'switchbot_2_interval_random_min': 2,
         'switchbot_2_interval_random_max': 10,
         'switchbot_2_repeat': '',
-        'switchbot_2_duration': 1,
+        'switchbot_2_duration_type': 'fixed',
+        'switchbot_2_duration_fixed': 1,
+        'switchbot_2_duration_random_min': 1,
+        'switchbot_2_duration_random_max': 3,
         'switchbot_3_enabled': False,
         'switchbot_3_interval_type': 'fixed',
         'switchbot_3_interval_fixed': 5,
         'switchbot_3_interval_random_min': 2,
         'switchbot_3_interval_random_max': 10,
         'switchbot_3_repeat': '',
-        'switchbot_3_duration': 1,
+        'switchbot_3_duration_type': 'fixed',
+        'switchbot_3_duration_fixed': 1,
+        'switchbot_3_duration_random_min': 1,
+        'switchbot_3_duration_random_max': 3,
         'switchbot_4_enabled': False,
         'switchbot_4_interval_type': 'fixed',
         'switchbot_4_interval_fixed': 5,
         'switchbot_4_interval_random_min': 2,
         'switchbot_4_interval_random_max': 10,
         'switchbot_4_repeat': '',
-        'switchbot_4_duration': 1
+        'switchbot_4_duration_type': 'fixed',
+        'switchbot_4_duration_fixed': 1,
+        'switchbot_4_duration_random_min': 1,
+        'switchbot_4_duration_random_max': 3
     }
     
     with open(SCENE_STATE_FILE, 'w') as f:
@@ -418,12 +455,13 @@ def start_scene():
 
 @app.route('/stop_scene', methods=['POST'])
 def stop_scene():
-    global scene_active, scene_end_time, scene_in_delay, scene_execution_start_time
+    global scene_active, scene_end_time, scene_delay_end_time, scene_in_delay, scene_execution_start_time
     if scene_active:
         print("SCENE: Stopping scene")
         add_status_message("Scene stopped by user")
         scene_active = False
         scene_end_time = None
+        scene_delay_end_time = None
         scene_in_delay = False
         scene_execution_start_time = None
     else:
@@ -457,28 +495,28 @@ def status():
     return jsonify(get_scene_status())
 
 def get_scene_status():
-    global scene_active, scene_end_time, scene_in_delay, scene_execution_start_time
-    if scene_active and scene_end_time:
-        remaining = max(0, int((scene_end_time - datetime.now()).total_seconds()))
-        
-        if scene_in_delay:
-            # During delay phase, show "Waiting" status
+    global scene_active, scene_end_time, scene_delay_end_time, scene_in_delay, scene_execution_start_time
+    if scene_active:
+        if scene_in_delay and scene_delay_end_time:
+            # During delay phase, show seconds remaining in delay
+            remaining = max(0, int((scene_delay_end_time - datetime.now()).total_seconds()))
             return {
                 'status': 'Waiting',
                 'remaining_minutes': remaining // 60,
                 'remaining_seconds': remaining % 60
             }
-        else:
-            # During actual scene execution, show "Running" status
+        elif not scene_in_delay and scene_end_time:
+            # During scene execution, show scene time remaining
+            remaining = max(0, int((scene_end_time - datetime.now()).total_seconds()))
             return {
-                'status': 'Running',
+                'status': 'Running', 
                 'remaining_minutes': remaining // 60,
                 'remaining_seconds': remaining % 60
             }
     return {'status': 'Idle', 'remaining_minutes': 0, 'remaining_seconds': 0}
 
 def run_scene():
-    global scene_active, scene_end_time, scene_in_delay, scene_execution_start_time
+    global scene_active, scene_end_time, scene_delay_end_time, scene_in_delay, scene_execution_start_time
     
     print("SCENE: Loading settings and scene state")
     settings = load_settings()
@@ -498,10 +536,19 @@ def run_scene():
         )
         print(f"SCENE: Random duration of {duration//60} minutes ({duration} seconds)")
     
-    # Set scene end time including initial delay + scene duration
+    # Set up timing for delay and scene phases
     initial_delay = scene_state['initial_delay']
-    total_time = initial_delay + duration
-    scene_end_time = datetime.now() + timedelta(seconds=total_time)
+    
+    if initial_delay > 0:
+        # Set delay end time and scene end time separately
+        scene_delay_end_time = datetime.now() + timedelta(seconds=initial_delay)
+        scene_end_time = datetime.now() + timedelta(seconds=initial_delay + duration)
+        scene_in_delay = True
+    else:
+        # No delay, go straight to scene execution
+        scene_delay_end_time = None
+        scene_end_time = datetime.now() + timedelta(seconds=duration)
+        scene_in_delay = False
     
     add_status_message(f"Scene Duration: {duration//60}m")
     
@@ -516,8 +563,19 @@ def run_scene():
             delay_display = f"{delay_seconds}s"
         print(f"SCENE: Initial delay of {initial_delay} seconds")
         add_status_message(f"Waiting {delay_display} before starting...")
-        time.sleep(initial_delay)
+        
+        # Sleep in small increments to allow stopping during delay
+        delay_elapsed = 0
+        while delay_elapsed < initial_delay and scene_active:
+            time.sleep(1)
+            delay_elapsed += 1
+        
+        if not scene_active:
+            return  # Scene was stopped during delay
+            
         scene_in_delay = False  # Clear delay flag
+        # Update scene end time for just the scene duration (not including delay)
+        scene_end_time = datetime.now() + timedelta(seconds=duration)
         add_status_message("Initial delay complete - scene starting now...")
     
     # Mark when actual scene execution starts
@@ -654,9 +712,7 @@ def run_scene():
                         switchbot_devices[i].press()
                         device_counts[device_key] += 1
                         add_status_message(f"Switchbot {i} activated ({device_counts[device_key]} times)")
-                        # Sleep for the specified duration
-                        if duration_val > 0:
-                            time.sleep(duration_val)
+                        # Note: Switchbot press duration is handled internally, no need for blocking sleep
                     except Exception as e:
                         print(f"SWITCHBOT {i} ERROR: Trigger failed - {e}")
                         add_status_message(f"Switchbot {i} failed to activate")
@@ -668,17 +724,20 @@ def run_scene():
         print("LOCK: Disengaging lock via webhook")
         call_webhook(settings.get('lock', {}).get('disengage_webhook'), "Lock disengaged")
     
-    scene_active = False
-    scene_end_time = None
-    scene_in_delay = False
-    scene_execution_start_time = None
-    
-    if scene_active is False:  # Scene completed normally
+    # Check if scene was stopped manually or completed naturally
+    if scene_active:  # Scene completed normally
         print("SCENE: Scene completed successfully")
         add_status_message("Scene completed")
     else:
         print("SCENE: Scene stopped by user")
         add_status_message("Scene stopped")
+    
+    # Clean up scene state
+    scene_active = False
+    scene_end_time = None
+    scene_delay_end_time = None
+    scene_in_delay = False
+    scene_execution_start_time = None
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PiLock Web Application')
