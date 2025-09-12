@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFD Web</title>
+    <title>PiLock</title>
     
     <!-- Favicon for all browsers -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
@@ -781,19 +781,66 @@
                 left: -50px;
             }
         }
+        
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: var(--border) var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--dark);
+        }
+        
+        .footer-brand {
+            font-size: 16px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .footer-version {
+            font-size: 14px;
+            color: var(--secondary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        @media (max-width: 768px) {
+            .footer {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .footer-brand {
+                font-size: 14px;
+            }
+            
+            .footer-version {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Top Toolbar -->
         <div class="toolbar">
-            <a href="/" class="app-name">⚡ AFD WEB</a>
+            <a href="/" class="app-name">⚡ PiLock</a>
             <div class="toolbar-actions">
                 <a href="/settings" class="btn btn-secondary">SETTINGS</a>
             </div>
         </div>
         
         {% block content %}{% endblock %}
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-brand">ArtisanForgeDesigns - 2025</div>
+            <div class="footer-version">Version {{ version }}</div>
+        </div>
     </div>
     
     <script>

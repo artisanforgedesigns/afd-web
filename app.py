@@ -26,6 +26,16 @@ scene_in_delay = False  # Track if scene is in initial delay phase
 scene_execution_start_time = None  # When actual scene execution starts
 status_messages = deque(maxlen=50)  # Keep last 50 status messages
 
+def load_version():
+    """Load version from VERSION file"""
+    try:
+        if os.path.exists('VERSION'):
+            with open('VERSION', 'r') as f:
+                return f.read().strip()
+    except Exception:
+        pass
+    return '0.0.0'  # fallback version
+
 def load_settings():
     if os.path.exists(SETTINGS_FILE):
         with open(SETTINGS_FILE, 'r') as f:
@@ -210,7 +220,8 @@ def call_webhook(url, description):
 def dashboard():
     scene_state = load_scene_state()
     status = get_scene_status()
-    return render_template('dashboard.html', scene_state=scene_state, status=status)
+    version = load_version()
+    return render_template('dashboard.html', scene_state=scene_state, status=status, version=version)
 
 @app.route('/favicon.ico')
 def favicon():
@@ -219,7 +230,8 @@ def favicon():
 @app.route('/settings')
 def settings():
     settings = load_settings()
-    return render_template('settings.html', settings=settings)
+    version = load_version()
+    return render_template('settings.html', settings=settings, version=version)
 
 @app.route('/save_settings', methods=['POST'])
 def save_settings_route():
@@ -249,6 +261,56 @@ def save_settings_route():
     save_settings(settings)
     print("SETTINGS: Configuration saved successfully")
     return redirect(url_for('settings'))
+
+@app.route('/check_updates')
+def check_updates():
+    """Check for updates by comparing current version with GitHub repo version"""
+    try:
+        current_version = load_version()
+        
+        # Fetch VERSION file from GitHub repo
+        github_url = "https://raw.githubusercontent.com/artisanforgedesigns/afd-web/main/VERSION"
+        response = requests.get(github_url, timeout=10)
+        
+        if response.status_code == 200:
+            remote_version = response.text.strip()
+            print(f"DEBUG: Local version: '{current_version}', Remote version: '{remote_version}'")
+            
+            if remote_version != current_version:
+                message = f"New version available: {remote_version}"
+                update_available = True
+            else:
+                message = f"You already have the latest version: {current_version}"
+                update_available = False
+        else:
+            message = "Unable to check for updates. Please try again later."
+            update_available = False
+            
+        return jsonify({"message": message, "update_available": update_available})
+        
+    except requests.exceptions.RequestException:
+        return jsonify({"message": "Unable to connect to update server. Please check your internet connection."})
+    except Exception as e:
+        return jsonify({"message": f"Error checking for updates: {str(e)}", "update_available": False})
+
+@app.route('/update_app', methods=['POST'])
+def update_app():
+    """Update the application by pulling changes from GitHub"""
+    try:
+        import subprocess
+        result = subprocess.run(['git', 'pull'], capture_output=True, text=True, cwd='.')
+        
+        if result.returncode == 0:
+            message = "Update successful! Please restart the application."
+            success = True
+        else:
+            message = f"Update failed: {result.stderr}"
+            success = False
+            
+        return jsonify({"message": message, "success": success})
+        
+    except Exception as e:
+        return jsonify({"message": f"Update error: {str(e)}", "success": False})
 
 @app.route('/save_scene_config', methods=['POST'])
 def save_scene_config():

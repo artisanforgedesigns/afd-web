@@ -90,6 +90,79 @@
         </div>
     </div>
     
-    <button type="submit" class="btn btn-primary">💾 SAVE SETTINGS</button>
+    <div class="control-panel">
+        <button type="submit" class="btn btn-primary">💾 SAVE SETTINGS</button>
+        <button type="button" class="btn btn-secondary" onclick="checkForUpdates()">🔍 CHECK FOR UPDATES</button>
+    </div>
 </form>
+
+<!-- Update message display -->
+<div id="update-message" class="section" style="display: none; margin-top: 20px;">
+    <h3>📦 Update Status</h3>
+    <p id="update-text"></p>
+    <div id="update-actions" class="control-panel" style="display: none;">
+        <button type="button" class="btn btn-success" onclick="performUpdate()">🔄 UPDATE</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelUpdate()">❌ CANCEL</button>
+    </div>
+</div>
+
+<script>
+function checkForUpdates() {
+    const button = document.querySelector('button[onclick="checkForUpdates()"]');
+    button.disabled = true;
+    button.textContent = '🔄 CHECKING...';
+    
+    fetch('/check_updates')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('update-text').textContent = data.message;
+            document.getElementById('update-message').style.display = 'block';
+            
+            // Show update buttons only if update is available
+            if (data.update_available) {
+                document.getElementById('update-actions').style.display = 'flex';
+            } else {
+                document.getElementById('update-actions').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            document.getElementById('update-text').textContent = 'Error checking for updates: ' + error.message;
+            document.getElementById('update-message').style.display = 'block';
+        })
+        .finally(() => {
+            button.disabled = false;
+            button.textContent = '🔍 CHECK FOR UPDATES';
+        });
+}
+
+function performUpdate() {
+    const updateButton = document.querySelector('button[onclick="performUpdate()"]');
+    const cancelButton = document.querySelector('button[onclick="cancelUpdate()"]');
+    
+    updateButton.disabled = true;
+    cancelButton.disabled = true;
+    updateButton.textContent = '⏳ UPDATING...';
+    
+    fetch('/update_app', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('update-text').textContent = data.message;
+            if (data.success) {
+                document.getElementById('update-actions').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            document.getElementById('update-text').textContent = 'Update error: ' + error.message;
+        })
+        .finally(() => {
+            updateButton.disabled = false;
+            cancelButton.disabled = false;
+            updateButton.textContent = '🔄 UPDATE';
+        });
+}
+
+function cancelUpdate() {
+    document.getElementById('update-actions').style.display = 'none';
+}
+</script>
 {% endblock %}
