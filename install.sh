@@ -1,5 +1,5 @@
 sudo apt update
-bash <(curl -L https://github.com/balena-io/wifi-connect/raw/master/scripts/raspbian-install.sh)
+#bash <(curl -L https://github.com/balena-io/wifi-connect/raw/master/scripts/raspbian-install.sh)
 sudo apt install python3 python3-pip python3-venv
 sudo chmod +x wifi-connect.sh run.sh
 
