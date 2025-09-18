@@ -1,4 +1,21 @@
+---
+layout: default
+title: Home
+nav_order: 1
+description: "Complete documentation for PiLock device configuration and usage"
+permalink: /
+---
+
 # PiLock User Guide
+{: .fs-9 }
+
+Complete documentation for PiLock device configuration and usage
+{: .fs-6 .fw-300 }
+
+[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[View on GitHub](https://github.com/blenington/afd/afd-web){: .btn .fs-5 .mb-4 .mb-md-0 }
+
+---
 
 ## Table of Contents
 
@@ -11,25 +28,46 @@
 ---
 
 ## Getting Started
+{: .text-delta }
 
 ### First Run
-1. Plug your device into a standard USB power supply and wait for the PiLock Wifi network to appear (This may take up to 60 seconds)
-2. Connect to the PiLock wifi network and wait for the captive portal page to pop up. This may take up to 120 seconds but you can also navigate to the page directly by typing the following address into your browser: http://192.168.4.1 (or the address displayed as the router address on the network info)
-3. Select your wifi network (must be 2.4 GHz), enter your password, click the "Connect" button and wait a few minutes for the board to finish rebooting and connecting
-4. Reconnect your personal device to your original home network, wait a minute for the device to finish rebooting and then navigate to the following URL: http://pilock.local:5001 (If this doesn't work, check the list of devices on your network to identify the ip address. You can do this via your router or a free local network scanner tool)
-5. Done! From now on, your PiLock will automatically connect to the network you have configured. If your network info ever changes or it can't connect, the wifi portal will re-appear at boot and allow you to select a new network 
+
+{: .note }
+> **Quick Start Tip:** The entire setup process typically takes 5-10 minutes. Make sure you have your WiFi password ready!
+
+1. **Power On**: Plug your device into a standard USB power supply and wait for the PiLock Wifi network to appear (This may take up to 60 seconds)
+
+2. **Connect to Setup Network**: Connect to the PiLock wifi network and wait for the captive portal page to pop up. This may take up to 120 seconds but you can also navigate to the page directly:
+   ```
+   http://192.168.4.1
+   ```
+
+3. **Configure WiFi**: Select your wifi network (must be 2.4 GHz), enter your password, click "Connect" and wait for the board to reboot
+
+4. **Access Your Device**: Reconnect to your home network and navigate to:
+   ```
+   http://pilock.local:5001
+   ```
+   {: .note }
+   > If this doesn't work, check your router's device list to find the IP address
+
+5. **You're Done!** Your PiLock will automatically connect to your network from now on 
 
 ---
 
 ## Settings Configuration
+{: .text-delta }
 
 Before using PiLock, you need to configure your device settings. Click the **SETTINGS** button from the dashboard to access the configuration page.
 
 ### 🔘 Switchbot Account
 
+{: .warning }
+> **Important:** You'll need the SwitchBot mobile app installed and your devices already set up before proceeding.
+
 **What you need:**
 - Switchbot Token
-- Switchbot Secret  
+- Switchbot Secret
 - Device IDs for each Switchbot device you want to control
 
 **How to obtain Switchbot credentials:**
@@ -90,6 +128,7 @@ Before using PiLock, you need to configure your device settings. Click the **SET
 ---
 
 ## Dashboard & Scene Configuration
+{: .text-delta }
 
 The dashboard is your main control center for creating and managing scenes.
 
@@ -126,6 +165,7 @@ The left panel shows real-time status updates:
 ---
 
 ## Basic Usage
+{: .text-delta }
 
 ### Creating Your First Scene
 
@@ -163,6 +203,7 @@ The left panel shows real-time status updates:
 ---
 
 ## Frequently Asked Questions
+{: .text-delta }
 
 ### General Usage
 
