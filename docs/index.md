@@ -1,19 +1,15 @@
 ---
-layout: default
-title: Home
-nav_order: 1
-description: "Complete documentation for PiLock device configuration and usage"
-permalink: /
+layout: home
 ---
 
 # PiLock User Guide
-{: .fs-9 }
 
-Complete documentation for PiLock device configuration and usage
-{: .fs-6 .fw-300 }
+Complete documentation for PiLock device configuration and usage.
 
-[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View on GitHub](https://github.com/blenington/afd/afd-web){: .btn .fs-5 .mb-4 .mb-md-0 }
+**Quick Links:**
+- [Getting Started](#getting-started) - Set up your device in minutes
+- [Settings Configuration](#settings-configuration) - Configure device integrations
+- [GitHub Repository](https://github.com/blenington/afd/afd-web) - View source code
 
 ---
 
@@ -28,12 +24,10 @@ Complete documentation for PiLock device configuration and usage
 ---
 
 ## Getting Started
-{: .text-delta }
 
 ### First Run
 
-{: .note }
-> **Quick Start Tip:** The entire setup process typically takes 5-10 minutes. Make sure you have your WiFi password ready!
+> **💡 Quick Start Tip:** The entire setup process typically takes 5-10 minutes. Make sure you have your WiFi password ready!
 
 1. **Power On**: Plug your device into a standard USB power supply and wait for the PiLock Wifi network to appear (This may take up to 60 seconds)
 
@@ -48,22 +42,19 @@ Complete documentation for PiLock device configuration and usage
    ```
    http://pilock.local:5001
    ```
-   {: .note }
-   > If this doesn't work, check your router's device list to find the IP address
+   > **ℹ️ Note:** If this doesn't work, check your router's device list to find the IP address
 
 5. **You're Done!** Your PiLock will automatically connect to your network from now on 
 
 ---
 
 ## Settings Configuration
-{: .text-delta }
 
 Before using PiLock, you need to configure your device settings. Click the **SETTINGS** button from the dashboard to access the configuration page.
 
 ### 🔘 Switchbot Account
 
-{: .warning }
-> **Important:** You'll need the SwitchBot mobile app installed and your devices already set up before proceeding.
+> **⚠️ Important:** You'll need the SwitchBot mobile app installed and your devices already set up before proceeding.
 
 **What you need:**
 - Switchbot Token
@@ -128,7 +119,6 @@ Before using PiLock, you need to configure your device settings. Click the **SET
 ---
 
 ## Dashboard & Scene Configuration
-{: .text-delta }
 
 The dashboard is your main control center for creating and managing scenes.
 
@@ -165,7 +155,6 @@ The left panel shows real-time status updates:
 ---
 
 ## Basic Usage
-{: .text-delta }
 
 ### Creating Your First Scene
 
@@ -203,7 +192,6 @@ The left panel shows real-time status updates:
 ---
 
 ## Frequently Asked Questions
-{: .text-delta }
 
 ### General Usage
 
