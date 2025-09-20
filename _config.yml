@@ -1,0 +1,25 @@
+# Site settings
+title: "PiLock User Guide"
+description: "Complete documentation for PiLock device configuration and usage"
+url: ""
+baseurl: ""
+author: "Artisan Forge Designs"
+
+# Theme
+remote_theme: abhinavs/moonwalk
+
+# Moonwalk theme settings
+theme_config:
+  appearance: "dark" # can be "light", "dark", or "auto"
+  back_home_text: "← Back to Home"
+  date_format: "%Y-%m-%d"
+  show_description: true
+  show_navbar: true
+  show_footer: true
+
+# Navigation
+navigation:
+  - title: "Home"
+    url: "/"
+  - title: "Documentation"
+    url: "/"
