@@ -1,5 +1,8 @@
 # PiLock User Guide
 
+![PiLock-Dashboard-V1 jpg](https://github.com/user-attachments/assets/8d45032d-fa96-4326-9efc-1df9611e0a08)
+
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
