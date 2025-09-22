@@ -179,6 +179,18 @@
             grid-template-columns: 80px 1fr !important;
             gap: 20px;
         }
+
+        /* Interface checkboxes horizontal layout */
+        .interface-checkboxes {
+            display: flex;
+            gap: 90px;
+            flex-wrap: wrap;
+        }
+
+        .interface-checkboxes .form-group {
+            margin-bottom: 0;
+            flex: 0 0 auto;
+        }
         
         /* Device Headers */
         .device-header {
@@ -828,6 +840,324 @@
                 font-size: 12px;
             }
         }
+
+        /* Popup Notification Styling */
+        .popup-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 10000;
+            min-width: 500px;
+            min-height: 300px;
+            background: var(--primary);
+            border: 8px solid var(--dark);
+            box-shadow: 16px 16px 0px var(--dark);
+            padding: 40px;
+            font-family: 'Arial Black', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--light);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+        }
+
+        .popup-notification.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .popup-notification.pishock {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF5722 100%);
+        }
+
+        .popup-notification.switchbot {
+            background: linear-gradient(135deg, #4ECDC4 0%, #26A69A 100%);
+        }
+
+        .popup-notification.lock {
+            background: linear-gradient(135deg, #FFE66D 0%, #F7931E 100%);
+            color: var(--dark);
+        }
+
+        .popup-icon {
+            font-size: 120px;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .popup-title {
+            font-size: 48px;
+            margin-bottom: 15px;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+            letter-spacing: 3px;
+        }
+
+        .popup-details {
+            font-size: 24px;
+            opacity: 0.9;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Responsive popup styling */
+        @media (max-width: 768px) {
+            .popup-notification {
+                min-width: 90vw;
+                min-height: 250px;
+                padding: 30px;
+            }
+
+            .popup-icon {
+                font-size: 80px;
+                margin-bottom: 15px;
+            }
+
+            .popup-title {
+                font-size: 32px;
+                margin-bottom: 10px;
+                letter-spacing: 2px;
+            }
+
+            .popup-details {
+                font-size: 18px;
+                letter-spacing: 0.5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .popup-notification {
+                min-width: 95vw;
+                min-height: 200px;
+                padding: 20px;
+            }
+
+            .popup-icon {
+                font-size: 60px;
+                margin-bottom: 10px;
+            }
+
+            .popup-title {
+                font-size: 24px;
+                margin-bottom: 8px;
+                letter-spacing: 1px;
+            }
+
+            .popup-details {
+                font-size: 16px;
+                letter-spacing: 0px;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--light);
+            border: var(--border) var(--dark);
+            box-shadow: var(--shadow) var(--dark);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: var(--border) var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(45deg, var(--accent) 0%, var(--secondary) 100%);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--dark);
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+        }
+
+        .close-button {
+            background: var(--danger);
+            color: var(--light);
+            border: 2px solid var(--dark);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .close-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px var(--dark);
+        }
+
+        .modal-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: var(--border) var(--dark);
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            background: var(--gray);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--dark);
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .form-control:focus {
+            outline: none;
+            box-shadow: 4px 4px 0px var(--primary);
+            transform: translate(-2px, -2px);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* Custom Accessories Styling */
+        .custom-endpoint-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 0;
+        }
+
+        .custom-endpoint-controls input {
+            flex: 1;
+        }
+
+        .custom-endpoint-controls .btn {
+            flex-shrink: 0;
+            white-space: nowrap;
+            min-width: 80px;
+            padding: 12px 16px;
+            font-size: 12px;
+        }
+
+        /* Ensure consistent spacing for Custom Accessories form groups */
+        .custom-endpoint-controls .form-group {
+            margin-bottom: 15px;
+        }
+
+        /* Increase spacing for Contact Sensors section */
+        .section h3:contains("Contact Sensors") + .form-group,
+        .section:has(h3:contains("Contact Sensors")) .form-group {
+            margin-bottom: 20px;
+        }
+
+        /* Device Section Labels */
+        .device-section-label {
+            margin: 0 0 0 0;
+            text-align: center;
+        }
+
+        .device-section-label h2 {
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--dark);
+            margin: 0;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, var(--accent) 0%, var(--secondary) 100%);
+            border: var(--border) var(--dark);
+            border-bottom: none;
+            box-shadow: none;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        /* Test Button Styles */
+        .test-button {
+            background: var(--accent);
+            color: var(--dark);
+            border: 2px solid var(--dark);
+            padding: 8px 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px var(--dark);
+            font-size: 11px;
+            min-width: 30px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+
+        .test-button:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px var(--dark);
+        }
+
+        .test-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px var(--dark);
+        }
+
+        /* Input with Test Button Layout */
+        .input-with-test-button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-with-test-button input {
+            flex: 1;
+            margin-right: 0;
+        }
+
+        .custom-endpoint-controls .test-button {
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -851,7 +1181,14 @@
             <div class="footer-version">Version {{ version }}</div>
         </div>
     </div>
-    
+
+    <!-- Popup Notification Container -->
+    <div id="popup-notification" class="popup-notification">
+        <div class="popup-icon" id="popup-icon"></div>
+        <div class="popup-title" id="popup-title"></div>
+        <div class="popup-details" id="popup-details"></div>
+    </div>
+
     <script>
         // Tab switching functionality
         function switchTab(tabGroup, activeTabId) {
@@ -984,6 +1321,131 @@
                 });
             });
         }
+
+        // Popup Notification Management
+        function checkPopupNotifications() {
+            fetch('/popup_notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    notifications.forEach(notification => {
+                        showPopupNotification(notification);
+                    });
+                })
+                .catch(error => console.error('Error fetching popup notifications:', error));
+        }
+
+        function showPopupNotification(notification) {
+            const popup = document.getElementById('popup-notification');
+            const icon = document.getElementById('popup-icon');
+            const title = document.getElementById('popup-title');
+            const details = document.getElementById('popup-details');
+
+            // Set content based on device type
+            let iconText, titleText, deviceClass;
+
+            switch(notification.device_type) {
+                case 'pishock':
+                    iconText = '⚡';
+                    titleText = `Haptic Module ${notification.device_number}`;
+                    deviceClass = 'pishock';
+                    break;
+                case 'switchbot':
+                    iconText = '🔘';
+                    titleText = `Switchbot ${notification.device_number}`;
+                    deviceClass = 'switchbot';
+                    break;
+                case 'lock':
+                    iconText = '🔒';
+                    titleText = notification.device_number === 'engage' ? 'Lock Engaged' : 'Lock Disengaged';
+                    deviceClass = 'lock';
+                    break;
+                case 'killswitch':
+                    iconText = '🔴';
+                    titleText = 'Killswitch Activated';
+                    deviceClass = 'pishock'; // Use pishock styling (red theme)
+                    break;
+                default:
+                    iconText = '⚙️';
+                    titleText = 'Device Action';
+                    deviceClass = 'pishock';
+            }
+
+            // Update popup content
+            icon.textContent = iconText;
+            title.textContent = titleText;
+            details.textContent = notification.action_details;
+
+            // Reset classes and add device-specific class
+            popup.className = `popup-notification ${deviceClass}`;
+
+            // Show popup with animation
+            setTimeout(() => {
+                popup.classList.add('show');
+            }, 50);
+
+            // Hide popup after 3 seconds
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 3000);
+        }
+
+        // Audio Notification Management
+        function checkAudioNotifications() {
+            fetch('/audio_notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    notifications.forEach(notification => {
+                        speakMessage(notification.message);
+                    });
+                })
+                .catch(error => console.error('Error fetching audio notifications:', error));
+        }
+
+        function speakMessage(message) {
+            // Check if speech synthesis is supported
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+
+                // Create new speech utterance
+                const utterance = new SpeechSynthesisUtterance(message);
+
+                // Configure speech settings
+                utterance.rate = 0.9;  // Slightly slower for clarity
+                utterance.pitch = 1.0; // Normal pitch
+                utterance.volume = 1.0; // Full volume
+
+                // Use a clear, authoritative voice if available
+                const voices = speechSynthesis.getVoices();
+                const preferredVoice = voices.find(voice =>
+                    voice.name.includes('Alex') ||
+                    voice.name.includes('Daniel') ||
+                    voice.name.includes('Samantha') ||
+                    voice.lang.startsWith('en-')
+                );
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                // Speak the message
+                speechSynthesis.speak(utterance);
+
+                console.log('Speaking:', message);
+            } else {
+                console.warn('Speech synthesis not supported in this browser');
+            }
+        }
+
+        // Start checking for notifications if we're on the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on the dashboard page
+            if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
+                // Check for popup notifications every second
+                setInterval(checkPopupNotifications, 1000);
+                // Check for audio notifications every second
+                setInterval(checkAudioNotifications, 1000);
+            }
+        });
     </script>
 </body>
 </html>

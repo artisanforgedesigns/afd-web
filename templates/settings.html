@@ -39,7 +39,7 @@
         </div>
         
         <div class="section">
-            <h3>⚡ Haptic Account</h3>
+            <h3>⚡ PiShock Account</h3>
             <div class="form-group">
                 <label for="pishock_username">Username:</label>
                 <input type="text" id="pishock_username" name="pishock_username" 
@@ -72,24 +72,132 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Contact Sensors and Custom Accessories Side by Side -->
+    <div class="settings-layout">
+        <div class="section">
+            <h3>📡 Contact Sensors</h3>
+            {% for i in range(1, 5) %}
+            <div class="form-group">
+                <label for="contact_sensor_{{ i }}_id">Device {{ i }} ID:</label>
+                <div class="input-with-test-button">
+                    <input type="text" id="contact_sensor_{{ i }}_id" name="contact_sensor_{{ i }}_id"
+                           value="{{ settings.get('contact_sensors', {}).get('sensor_' + i|string + '_id', '') }}"
+                           placeholder="Enter SwitchBot Contact Sensor Device ID">
+                    {% if settings.get('interface', {}).get('developer_mode', False) %}
+                    <button type="button" class="test-button" onclick="testContactSensor({{ i }})">T</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="section">
+            <h3>🔧 Custom Accessories</h3>
+            {% for i in range(1, 5) %}
+            <div class="form-group">
+                <label for="custom_{{ i }}_endpoint">Endpoint {{ i }}:</label>
+                <div class="custom-endpoint-controls">
+                    <input type="url" id="custom_{{ i }}_endpoint" name="custom_{{ i }}_endpoint"
+                           value="{{ settings.get('custom_accessories', {}).get('endpoint_' + i|string, '') }}"
+                           placeholder="https://api.example.com/endpoint">
+                    <button type="button" class="btn btn-secondary" onclick="editPayload({{ i }})">PAYLOAD</button>
+                    {% if settings.get('interface', {}).get('developer_mode', False) %}
+                    <button type="button" class="test-button" onclick="testCustomAccessory({{ i }})">T</button>
+                    {% endif %}
+                </div>
+                <!-- Hidden fields for payload and method -->
+                <input type="hidden" id="custom_{{ i }}_payload" name="custom_{{ i }}_payload"
+                       value="{{ settings.get('custom_accessories', {}).get('payload_' + i|string, '{}') }}">
+                <input type="hidden" id="custom_{{ i }}_method" name="custom_{{ i }}_method"
+                       value="{{ settings.get('custom_accessories', {}).get('method_' + i|string, 'POST') }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
     <!-- AFD MagLock Device -->
     <div class="section">
         <h3>🔒 AFD MAGLOCK DEVICE</h3>
         <div class="form-group maglock-form-group">
             <label for="lock_engage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Lock:</label>
-            <input type="url" id="lock_engage_webhook" name="lock_engage_webhook" 
-                   value="{{ settings.get('lock', {}).get('engage_webhook', '') }}" 
-                   placeholder="https://us-apia.coolkit.cc/v2/">
+            <div class="input-with-test-button">
+                <input type="url" id="lock_engage_webhook" name="lock_engage_webhook"
+                       value="{{ settings.get('lock', {}).get('engage_webhook', '') }}"
+                       placeholder="https://us-apia.coolkit.cc/v2/">
+                {% if settings.get('interface', {}).get('developer_mode', False) %}
+                <button type="button" class="test-button" onclick="testMagLock('engage')">T</button>
+                {% endif %}
+            </div>
         </div>
         <div class="form-group maglock-form-group">
             <label for="lock_disengage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Unlock:</label>
-            <input type="url" id="lock_disengage_webhook" name="lock_disengage_webhook" 
-                   value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}" 
-                   placeholder="https://us-apia.coolkit.cc/v2/">
+            <div class="input-with-test-button">
+                <input type="url" id="lock_disengage_webhook" name="lock_disengage_webhook"
+                       value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}"
+                       placeholder="https://us-apia.coolkit.cc/v2/">
+                {% if settings.get('interface', {}).get('developer_mode', False) %}
+                <button type="button" class="test-button" onclick="testMagLock('disengage')">T</button>
+                {% endif %}
+            </div>
         </div>
     </div>
-    
+
+    <!-- Interface Preferences -->
+    <div class="section">
+        <h3>🖥️ Interface Preferences</h3>
+        <div class="interface-checkboxes">
+            <div class="form-group">
+                <label for="popup_notifications" class="enable-checkbox">
+                    <input type="checkbox" id="popup_notifications" name="popup_notifications"
+                           {% if settings.get('interface', {}).get('popup_notifications', False) %}checked{% endif %}>
+                    Enable Popup Notifications
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="audio_notifications" class="enable-checkbox">
+                    <input type="checkbox" id="audio_notifications" name="audio_notifications"
+                           {% if settings.get('interface', {}).get('audio_notifications', False) %}checked{% endif %}>
+                    Enable Audio
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="developer_mode" class="enable-checkbox">
+                    <input type="checkbox" id="developer_mode" name="developer_mode"
+                           {% if settings.get('interface', {}).get('developer_mode', False) %}checked{% endif %}>
+                    Developer Mode
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kill Switch -->
+    <div class="section">
+        <h3>🔴 Kill Switch</h3>
+        <div class="form-group">
+            <label for="killswitch_plug_id">SwitchBot Plug ID:</label>
+            <div class="input-with-test-button">
+                <input type="text" id="killswitch_plug_id" name="killswitch_plug_id"
+                       value="{{ settings.get('killswitch', {}).get('plug_id', '') }}"
+                       placeholder="Enter SwitchBot Plug Device ID">
+                {% if settings.get('interface', {}).get('developer_mode', False) %}
+                <button type="button" class="test-button" onclick="testKillSwitch('plug')">T</button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="killswitch_api_endpoint">Optional API Endpoint:</label>
+            <div class="input-with-test-button">
+                <input type="url" id="killswitch_api_endpoint" name="killswitch_api_endpoint"
+                       value="{{ settings.get('killswitch', {}).get('api_endpoint', '') }}"
+                       placeholder="https://example.com/api/killswitch">
+                {% if settings.get('interface', {}).get('developer_mode', False) %}
+                <button type="button" class="test-button" onclick="testKillSwitch('api')">T</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <div class="control-panel">
         <button type="submit" class="btn btn-primary">💾 SAVE SETTINGS</button>
         <button type="button" class="btn btn-secondary" onclick="checkForUpdates()">🔍 CHECK FOR UPDATES</button>
@@ -103,6 +211,37 @@
     <div id="update-actions" class="control-panel" style="display: none;">
         <button type="button" class="btn btn-success" onclick="performUpdate()">🔄 UPDATE</button>
         <button type="button" class="btn btn-secondary" onclick="cancelUpdate()">❌ CANCEL</button>
+    </div>
+</div>
+
+<!-- Payload Editor Modal -->
+<div id="payload-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🔧 Edit Payload for Endpoint <span id="endpoint-number"></span></h3>
+            <button type="button" class="close-button" onclick="closePayloadModal()">✖</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="api-method">API Method:</label>
+                <select id="api-method" class="form-control">
+                    <option value="POST">POST</option>
+                    <option value="GET">GET</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="payload-editor">JSON Payload:</label>
+                <textarea id="payload-editor" class="form-control" rows="10" placeholder='{"key": "value", "action": "trigger"}'></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="savePayload()">💾 SAVE</button>
+            <button type="button" class="btn btn-success" onclick="testPayload()">🧪 TEST</button>
+            <button type="button" class="btn btn-secondary" onclick="closePayloadModal()">❌ CANCEL</button>
+        </div>
     </div>
 </div>
 
@@ -163,6 +302,270 @@ function performUpdate() {
 
 function cancelUpdate() {
     document.getElementById('update-actions').style.display = 'none';
+}
+
+function editPayload(endpointNumber) {
+    // Get current payload data if it exists
+    const currentPayload = document.getElementById(`custom_${endpointNumber}_payload`)?.value || '{}';
+    const currentMethod = document.getElementById(`custom_${endpointNumber}_method`)?.value || 'POST';
+
+    // Set the modal content
+    document.getElementById('endpoint-number').textContent = endpointNumber;
+    document.getElementById('payload-editor').value = currentPayload;
+    document.getElementById('api-method').value = currentMethod;
+
+    // Show the modal
+    document.getElementById('payload-modal').style.display = 'flex';
+}
+
+function savePayload() {
+    const endpointNumber = document.getElementById('endpoint-number').textContent;
+    const payload = document.getElementById('payload-editor').value;
+    const method = document.getElementById('api-method').value;
+
+    // Validate JSON
+    try {
+        JSON.parse(payload);
+    } catch (e) {
+        alert('Invalid JSON format. Please check your syntax.');
+        return;
+    }
+
+    // Update existing hidden inputs
+    const payloadInput = document.getElementById(`custom_${endpointNumber}_payload`);
+    const methodInput = document.getElementById(`custom_${endpointNumber}_method`);
+
+    if (payloadInput) {
+        payloadInput.value = payload;
+    }
+    if (methodInput) {
+        methodInput.value = method;
+    }
+
+    // Close modal
+    closePayloadModal();
+}
+
+function closePayloadModal() {
+    document.getElementById('payload-modal').style.display = 'none';
+}
+
+function testPayload() {
+    const endpointNumber = document.getElementById('endpoint-number').textContent;
+    const payload = document.getElementById('payload-editor').value;
+    const method = document.getElementById('api-method').value;
+
+    // Get the endpoint URL from the form
+    const endpointInput = document.getElementById(`custom_${endpointNumber}_endpoint`);
+    const endpointUrl = endpointInput ? endpointInput.value : '';
+
+    if (!endpointUrl) {
+        alert('Please enter an endpoint URL before testing.');
+        return;
+    }
+
+    // Validate JSON
+    try {
+        JSON.parse(payload);
+    } catch (e) {
+        alert('Invalid JSON format. Please check your syntax before testing.');
+        return;
+    }
+
+    // Disable test button and show loading
+    const testButton = document.querySelector('button[onclick="testPayload()"]');
+    const originalText = testButton.textContent;
+    testButton.disabled = true;
+    testButton.textContent = '⏳ TESTING...';
+
+    // Send test request to backend
+    fetch('/test_custom_payload', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            endpoint: endpointUrl,
+            method: method,
+            payload: payload
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Test successful!\n\nStatus: ${data.status_code}\nResponse: ${data.response || 'No response body'}`);
+        } else {
+            alert(`Test failed!\n\nError: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        alert(`Test failed!\n\nNetwork error: ${error.message}`);
+    })
+    .finally(() => {
+        testButton.disabled = false;
+        testButton.textContent = originalText;
+    });
+}
+
+// Developer Mode Test Functions
+function testContactSensor(sensorNumber) {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '...';
+
+    fetch('/test_contact_sensor', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sensor_number: sensorNumber })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.style.background = '#4CAF50';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        } else {
+            button.style.background = '#f44336';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.style.background = '#f44336';
+        setTimeout(() => {
+            button.style.background = '';
+        }, 2000);
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+}
+
+function testCustomAccessory(accessoryNumber) {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '...';
+
+    fetch('/test_custom_accessory', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accessory_number: accessoryNumber })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.style.background = '#4CAF50';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        } else {
+            button.style.background = '#f44336';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.style.background = '#f44336';
+        setTimeout(() => {
+            button.style.background = '';
+        }, 2000);
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+}
+
+function testMagLock(action) {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '...';
+
+    fetch('/test_maglock', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: action })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.style.background = '#4CAF50';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        } else {
+            button.style.background = '#f44336';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.style.background = '#f44336';
+        setTimeout(() => {
+            button.style.background = '';
+        }, 2000);
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+}
+
+function testKillSwitch(type) {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '...';
+
+    fetch('/test_killswitch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: type })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            button.style.background = '#4CAF50';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        } else {
+            button.style.background = '#f44336';
+            setTimeout(() => {
+                button.style.background = '';
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.style.background = '#f44336';
+        setTimeout(() => {
+            button.style.background = '';
+        }, 2000);
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.textContent = originalText;
+    });
 }
 </script>
 {% endblock %}
