@@ -594,6 +594,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Mask all input fields (except checkboxes and hidden inputs)
+    const allInputs = document.querySelectorAll('#settings-form input[type="text"], #settings-form input[type="url"]');
+
+    allInputs.forEach(field => {
+        if (field && field.value) {
+            // Store original type
+            field.dataset.originalType = field.type;
+            // Mask the value
+            field.type = 'password';
+
+            // Unmask on focus
+            field.addEventListener('focus', function() {
+                this.type = this.dataset.originalType || 'text';
+            });
+
+            // Re-mask on blur if not empty
+            field.addEventListener('blur', function() {
+                if (this.value) {
+                    this.type = 'password';
+                }
+            });
+        }
+    });
 });
 
 // Show save success popup
