@@ -58,13 +58,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
+            padding: 10px 0;
+            margin-bottom: 20px;
             border-bottom: var(--border) var(--dark);
         }
-        
+
         .app-name {
-            font-size: 32px;
+            font-size: 42px;
             font-weight: 900;
             text-transform: uppercase;
             color: var(--primary);
@@ -77,8 +77,39 @@
             color: var(--secondary);
             transform: scale(1.05);
         }
-        
-        
+
+        .header-center {
+            flex: 1 1 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .header-logo {
+            height: 120px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .header-timer {
+            font-family: 'Courier New', Consolas, 'Lucida Console', monospace;
+            font-size: 54px;
+            font-weight: 900;
+            color: var(--dark);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            text-align: center;
+            letter-spacing: 6px;
+            padding: 15px 30px;
+            border: 5px solid var(--dark);
+            box-shadow: 6px 6px 0px var(--dark);
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+            border-radius: 0;
+            max-width: 375px;
+            position: absolute;
+        }
+
+
         .status-compact {
             padding: 12px 20px;
             font-size: 16px;
@@ -110,6 +141,10 @@
             display: flex;
             gap: 15px;
             flex: 0 0 auto;
+        }
+
+        .toolbar-actions a {
+            text-decoration: none;
         }
         
         /* Dashboard Layout */
@@ -183,13 +218,25 @@
         /* Interface checkboxes horizontal layout */
         .interface-checkboxes {
             display: flex;
-            gap: 90px;
             flex-wrap: wrap;
+            gap: 90px;
+            width: 100%;
         }
 
         .interface-checkboxes .form-group {
             margin-bottom: 0;
-            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            grid-template-columns: unset;
+        }
+
+        .interface-checkboxes .enable-checkbox {
+            order: 2;
+        }
+
+        .interface-checkboxes input[type="checkbox"] {
+            order: 1;
         }
         
         /* Device Headers */
@@ -253,7 +300,7 @@
             border: var(--border) var(--dark);
             background: var(--light);
             padding: 25px;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             box-shadow: var(--shadow) var(--dark);
             position: relative;
         }
@@ -312,7 +359,7 @@
         }
         
         .tab-content {
-            padding: 25px;
+            padding: 15px;
             display: none;
             flex: 1;
             overflow: visible;
@@ -326,7 +373,7 @@
         
         /* Form Elements */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: grid;
             grid-template-columns: 90px 1fr;
             align-items: center;
@@ -342,6 +389,22 @@
         
         .form-grid .form-group {
             margin-bottom: 15px;
+        }
+
+        /* Horizontal layout for scene modifiers */
+        .modifier-horizontal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .modifier-horizontal.modifier-extend {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        /* Increase spacing for Accessory label in MOD 4 */
+        .form-group:has(label[data-tooltip*="Custom accessory"]) {
+            gap: 35px;
         }
         
         .form-group label {
@@ -377,16 +440,6 @@
             min-width: 80px;
         }
         
-        .form-group input:disabled, .form-group select:disabled {
-            opacity: 0.5;
-            background: var(--gray);
-            cursor: not-allowed;
-        }
-        
-        .form-group label.disabled {
-            opacity: 0.5;
-            color: #999;
-        }
         
         /* Buttons */
         .btn {
@@ -474,6 +527,7 @@
             gap: 15px;
             flex-wrap: wrap;
             margin-top: 20px;
+            justify-content: center;
         }
         
         /* Tooltips */
@@ -497,6 +551,7 @@
             font-weight: 700;
             box-shadow: 4px 4px 0px var(--primary);
             border-radius: 4px;
+            text-transform: none;
             
             /* Dynamic positioning */
             bottom: 100%;
@@ -595,7 +650,18 @@
             body {
                 padding: 10px;
             }
-            
+
+            .header-logo {
+                height: 50px;
+            }
+
+            .header-timer {
+                font-size: 36px;
+                padding: 12px 20px;
+                letter-spacing: 4px;
+                max-width: 90%;
+            }
+
             .container {
                 padding: 15px;
             }
@@ -754,7 +820,7 @@
             }
             
             .tab-content {
-                padding: 15px;
+                padding: 10px;
             }
             
             .device-header h3 {
@@ -960,6 +1026,36 @@
             }
         }
 
+        /* Save Success Popup */
+        .save-success-popup {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #4ECDC4 0%, #26A69A 100%);
+            color: var(--light);
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .save-success-popup.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .save-success-popup.hide {
+            transform: translateX(-50%) translateY(100px);
+            opacity: 0;
+        }
+
         /* Modal Styles */
         .modal {
             position: fixed;
@@ -1076,9 +1172,12 @@
         .custom-endpoint-controls .btn {
             flex-shrink: 0;
             white-space: nowrap;
-            min-width: 80px;
-            padding: 12px 16px;
-            font-size: 12px;
+            min-width: 60px;
+            padding: 8px 10px;
+            font-size: 10px;
+            margin: 0;
+            box-shadow: 2px 2px 0px var(--dark);
+            border: 2px solid var(--dark);
         }
 
         /* Ensure consistent spacing for Custom Accessories form groups */
@@ -1106,8 +1205,8 @@
             margin: 0;
             padding: 12px 20px;
             background: linear-gradient(45deg, var(--accent) 0%, var(--secondary) 100%);
-            border: var(--border) var(--dark);
-            border-bottom: none;
+            border: none;
+            border-bottom: var(--border) var(--dark);
             box-shadow: none;
             font-family: 'Courier New', monospace;
             letter-spacing: 2px;
@@ -1164,9 +1263,13 @@
     <div class="container">
         <!-- Top Toolbar -->
         <div class="toolbar">
-            <a href="/" class="app-name">⚡ PiLock</a>
+            <a href="/" class="app-name">PiLock</a>
+            <div class="header-center">
+                <img id="header-logo" src="/static/AFD_Logo_Final_Transparent_Cropped.png" alt="AFD Logo" class="header-logo">
+                <div id="header-timer" class="header-timer" style="display: none;"></div>
+            </div>
             <div class="toolbar-actions">
-                <a href="/settings" class="btn btn-secondary">⚙️ SETTINGS</a>
+                <a href="/settings" class="btn btn-secondary">SETTINGS</a>
             </div>
         </div>
         
@@ -1187,6 +1290,11 @@
         <div class="popup-icon" id="popup-icon"></div>
         <div class="popup-title" id="popup-title"></div>
         <div class="popup-details" id="popup-details"></div>
+    </div>
+
+    <!-- Save Success Popup -->
+    <div id="save-success-popup" class="save-success-popup">
+        Save successful
     </div>
 
     <script>
@@ -1213,28 +1321,36 @@
             }
         }
         
-        // Toggle form fields based on enable checkbox
-        function toggleDeviceFields(deviceType, deviceNumber) {
-            const checkbox = document.querySelector(`input[name="${deviceType}_${deviceNumber}_enabled"]`);
-            const tabContent = document.getElementById(`${deviceType}-${deviceNumber}`);
-            
-            if (checkbox && tabContent) {
-                const inputs = tabContent.querySelectorAll('input[type="text"]:not([name*="_enabled"])');
-                const labels = tabContent.querySelectorAll('label:not(.enable-checkbox)');
-                
-                inputs.forEach(input => {
-                    input.disabled = !checkbox.checked;
-                });
-                
-                labels.forEach(label => {
-                    if (checkbox.checked) {
-                        label.classList.remove('disabled');
-                    } else {
-                        label.classList.add('disabled');
-                    }
-                });
+        // Update tab icon based on enable checkbox
+        function updateTabIcon(deviceType, deviceNumber) {
+            let checkboxName, buttonSelector;
+
+            if (deviceType === 'modifiers') {
+                checkboxName = `modifier_${deviceNumber}_enabled`;
+                buttonSelector = `[data-tab-group="${deviceType}"] .tab-button[onclick*="modifier-${deviceNumber}"]`;
+            } else {
+                checkboxName = `${deviceType}_${deviceNumber}_enabled`;
+                buttonSelector = `[data-tab-group="${deviceType}"] .tab-button[onclick*="${deviceType}-${deviceNumber}"]`;
+            }
+
+            const checkbox = document.querySelector(`input[name="${checkboxName}"]`);
+            const tabButton = document.querySelector(buttonSelector);
+
+            if (checkbox && tabButton) {
+                // Use filled/unfilled circles for enabled/disabled states
+                const icon = checkbox.checked ? '●' : '○'; // filled vs unfilled circle
+
+                // Store the original text content without any icons (extract just the label part)
+                let baseText = tabButton.textContent;
+
+                // Remove any existing circle icon (● or ○) at the start and normalize whitespace
+                baseText = baseText.replace(/^[●○]\s*/, '').trim();
+
+                // Set the button text with larger icon
+                tabButton.innerHTML = `<span style="font-size: 1.4em;">${icon}</span> ${baseText}`;
             }
         }
+
         
         // Initialize tabs on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1256,21 +1372,35 @@
             });
             
             // Setup enable/disable functionality for all devices
-            ['pishock', 'switchbot'].forEach(deviceType => {
+            ['pishock', 'switchbot', 'custom'].forEach(deviceType => {
                 for (let i = 1; i <= 4; i++) {
                     const checkbox = document.querySelector(`input[name="${deviceType}_${i}_enabled"]`);
                     if (checkbox) {
-                        // Set initial state
-                        toggleDeviceFields(deviceType, i);
-                        
+                        // Set initial icon state
+                        updateTabIcon(deviceType, i);
+
                         // Add change listener
                         checkbox.addEventListener('change', function() {
-                            toggleDeviceFields(deviceType, i);
+                            updateTabIcon(deviceType, i);
                         });
                     }
                 }
             });
-            
+
+            // Setup enable/disable functionality for scene modifiers
+            for (let i = 1; i <= 4; i++) {
+                const checkbox = document.querySelector(`input[name="modifier_${i}_enabled"]`);
+                if (checkbox) {
+                    // Set initial icon state
+                    updateTabIcon('modifiers', i);
+
+                    // Add change listener
+                    checkbox.addEventListener('change', function() {
+                        updateTabIcon('modifiers', i);
+                    });
+                }
+            }
+
             // Setup smart tooltip positioning
             setupSmartTooltips();
         });
@@ -1345,27 +1475,27 @@
 
             switch(notification.device_type) {
                 case 'pishock':
-                    iconText = '⚡';
+                    iconText = '●';
                     titleText = `Haptic Module ${notification.device_number}`;
                     deviceClass = 'pishock';
                     break;
                 case 'switchbot':
-                    iconText = '🔘';
+                    iconText = '●';
                     titleText = `Switchbot ${notification.device_number}`;
                     deviceClass = 'switchbot';
                     break;
                 case 'lock':
-                    iconText = '🔒';
+                    iconText = '●';
                     titleText = notification.device_number === 'engage' ? 'Lock Engaged' : 'Lock Disengaged';
                     deviceClass = 'lock';
                     break;
                 case 'killswitch':
-                    iconText = '🔴';
+                    iconText = '●';
                     titleText = 'Killswitch Activated';
                     deviceClass = 'pishock'; // Use pishock styling (red theme)
                     break;
                 default:
-                    iconText = '⚙️';
+                    iconText = '●';
                     titleText = 'Device Action';
                     deviceClass = 'pishock';
             }

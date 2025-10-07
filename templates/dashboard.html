@@ -5,7 +5,7 @@
     <!-- Status Feed -->
     <div class="status-feed-container">
         <div class="section">
-            <h3>🔥 LIVE STATUS FEED</h3>
+            <h3>LIVE STATUS FEED</h3>
             <div class="status-feed" id="status-feed">
                 <div id="status-messages">NO ACTIVITY YET...</div>
             </div>
@@ -15,7 +15,7 @@
     <!-- Scene Configuration -->
     <div class="scene-config-container">
         <div class="section scene-config-section">
-            <h3>⏱️ SCENE CONFIG</h3>
+            <h3>SCENE CONFIG</h3>
             <form method="POST" action="/save_scene_config" id="scene-config-form">
                 <div class="form-group">
                     <label class="tooltip" data-tooltip="Scene runtime - enter fixed minutes (e.g., '5') or range (e.g., '2-10') for random selection">Duration:</label>
@@ -33,7 +33,7 @@
             <!-- Status Display within Scene Config -->
             <div class="scene-status-display">
                 <div class="status-compact {% if status.status == 'Running' %}running{% else %}idle{% endif %}" id="scene-status">
-                    ⚡ {{ status.status }}
+                    {{ status.status }}
                     {% if status.status == 'Running' %}
                     - {{ status.remaining_minutes }}:{{ '%02d'|format(status.remaining_seconds) }} LEFT
                     {% endif %}
@@ -50,22 +50,22 @@
     <!-- PiShock Modules -->
     <div class="device-tabs" data-tab-group="pishock">
         <div class="device-section-label">
-            <h2>⚡ PiShock Modules</h2>
+            <h2>PiShock Modules</h2>
         </div>
         <div class="tab-nav">
-            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-1')">⚡ HAPTIC 1</button>
-            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-2')">⚡ HAPTIC 2</button>
-            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-3')">⚡ HAPTIC 3</button>
-            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-4')">⚡ HAPTIC 4</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-1')">○ HAPTIC 1</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-2')">○ HAPTIC 2</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-3')">○ HAPTIC 3</button>
+            <button type="button" class="tab-button" onclick="switchTab('pishock', 'pishock-4')">○ HAPTIC 4</button>
         </div>
         
         {% for i in range(1, 5) %}
         <div id="pishock-{{ i }}" class="tab-content">
             <div class="device-header">
-                <h3>⚡ HAPTIC {{ i }}</h3>
-                <label class="enable-checkbox">
+                <h3>HAPTIC {{ i }}</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this PiShock device to trigger during scenes. Device must be configured in Settings with a sharecode">
                     <input type="checkbox" name="pishock_{{ i }}_enabled" form="scene-config-form"
-                           {% if scene_state.get('pishock_' + i|string + '_enabled', False) %}checked{% endif %}> 
+                           {% if scene_state.get('pishock_' + i|string + '_enabled', False) %}checked{% endif %}>
                     ENABLE
                 </label>
             </div>
@@ -85,19 +85,7 @@
                            placeholder="">
                 </div>
                 
-                <div class="form-group">
-                    <label class="tooltip" data-tooltip="Maximum activations during scene - leave empty for unlimited, or use range for random count">Repeat:</label>
-                    <input type="text" name="pishock_{{ i }}_repeat" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
-                           value="{{ scene_state.get('pishock_' + i|string + '_repeat', '') }}" 
-                           placeholder="">
-                </div>
                 
-                <div class="form-group">
-                    <label class="tooltip" data-tooltip="How long each shock lasts in seconds - enter fixed value (e.g., '1') or range (e.g., '1-3')">Duration:</label>
-                    <input type="text" name="pishock_{{ i }}_duration" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
-                           value="{% if scene_state.get('pishock_' + i|string + '_duration_type', 'fixed') == 'fixed' %}{{ scene_state.get('pishock_' + i|string + '_duration_fixed', 1) }}{% else %}{{ scene_state.get('pishock_' + i|string + '_duration_random_min', 1) }}-{{ scene_state.get('pishock_' + i|string + '_duration_random_max', 3) }}{% endif %}" 
-                           placeholder="">
-                </div>
             </div>
         </div>
         {% endfor %}
@@ -106,22 +94,22 @@
     <!-- SwitchBot Devices -->
     <div class="device-tabs" data-tab-group="switchbot">
         <div class="device-section-label">
-            <h2>🔘 SwitchBot Devices</h2>
+            <h2>SwitchBot Devices</h2>
         </div>
         <div class="tab-nav">
-            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-1')">🔘 BOT 1</button>
-            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-2')">🔘 BOT 2</button>
-            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-3')">🔘 BOT 3</button>
-            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-4')">🔘 BOT 4</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-1')">○ BOT 1</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-2')">○ BOT 2</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-3')">○ BOT 3</button>
+            <button type="button" class="tab-button" onclick="switchTab('switchbot', 'switchbot-4')">○ BOT 4</button>
         </div>
         
         {% for i in range(1, 5) %}
         <div id="switchbot-{{ i }}" class="tab-content">
             <div class="device-header">
-                <h3>🔘 BOT {{ i }}</h3>
-                <label class="enable-checkbox">
+                <h3>BOT {{ i }}</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this SwitchBot device to trigger during scenes. Device must be configured in Settings with a device ID">
                     <input type="checkbox" name="switchbot_{{ i }}_enabled" form="scene-config-form"
-                           {% if scene_state.get('switchbot_' + i|string + '_enabled', False) %}checked{% endif %}> 
+                           {% if scene_state.get('switchbot_' + i|string + '_enabled', False) %}checked{% endif %}>
                     ENABLE
                 </label>
             </div>
@@ -133,12 +121,6 @@
                        placeholder="">
             </div>
             
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Maximum button presses during scene - leave empty for unlimited, or use range for random count">Repeat:</label>
-                <input type="text" name="switchbot_{{ i }}_repeat" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
-                       value="{{ scene_state.get('switchbot_' + i|string + '_repeat', '') }}" 
-                       placeholder="">
-            </div>
         </div>
         {% endfor %}
     </div>
@@ -146,20 +128,20 @@
     <!-- Custom Accessories -->
     <div class="device-tabs" data-tab-group="custom">
         <div class="device-section-label">
-            <h2>🔧 Custom Accessories</h2>
+            <h2>Custom Accessories</h2>
         </div>
         <div class="tab-nav">
-            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-1')">🔧 CUSTOM 1</button>
-            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-2')">🔧 CUSTOM 2</button>
-            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-3')">🔧 CUSTOM 3</button>
-            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-4')">🔧 CUSTOM 4</button>
+            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-1')">○ API 1</button>
+            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-2')">○ API 2</button>
+            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-3')">○ API 3</button>
+            <button type="button" class="tab-button" onclick="switchTab('custom', 'custom-4')">○ API 4</button>
         </div>
 
         {% for i in range(1, 5) %}
         <div id="custom-{{ i }}" class="tab-content">
             <div class="device-header">
-                <h3>🔧 CUSTOM {{ i }}</h3>
-                <label class="enable-checkbox">
+                <h3>ACCESSORY {{ i }}</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this custom HTTP API accessory to trigger during scenes. Endpoint must be configured in Settings">
                     <input type="checkbox" name="custom_{{ i }}_enabled" form="scene-config-form"
                            {% if scene_state.get('custom_' + i|string + '_enabled', False) %}checked{% endif %}>
                     ENABLE
@@ -173,12 +155,6 @@
                        placeholder="">
             </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Maximum API calls during scene - leave empty for unlimited, or use range for random count">Repeat:</label>
-                <input type="text" name="custom_{{ i }}_repeat" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
-                       value="{{ scene_state.get('custom_' + i|string + '_repeat', '') }}"
-                       placeholder="">
-            </div>
         </div>
         {% endfor %}
     </div>
@@ -186,151 +162,156 @@
     <!-- Scene Modifiers -->
     <div class="device-tabs" data-tab-group="modifiers">
         <div class="device-section-label">
-            <h2>⚡ Scene Modifiers</h2>
+            <h2>Scene Modifiers</h2>
         </div>
         <div class="tab-nav">
-            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-1')">⏳ MOD 1</button>
-            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-2')">⚡ MOD 2</button>
-            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-3')">🔘 MOD 3</button>
-            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-4')">🔧 MOD 4</button>
+            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-1')">○ MOD 1</button>
+            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-2')">○ MOD 2</button>
+            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-3')">○ MOD 3</button>
+            <button type="button" class="tab-button" onclick="switchTab('modifiers', 'modifier-4')">○ MOD 4</button>
         </div>
 
         <!-- Modifier 1: Extend Scene Time -->
         <div id="modifier-1" class="tab-content">
             <div class="device-header">
-                <h3>⏳ EXTEND SCENE TIME</h3>
-                <label class="enable-checkbox">
+                <h3 class="tooltip" data-tooltip="When triggered, dynamically extends the running scene by the specified minutes. Can only execute once per scene">EXTEND SCENE TIME</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this modifier to allow mid-scene time extension via contact sensor trigger">
                     <input type="checkbox" name="modifier_1_enabled" form="scene-config-form"
                            {% if scene_state.get('modifier_1_enabled', False) %}checked{% endif %}>
                     ENABLE
                 </label>
             </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Contact sensor that triggers this modifier">Contact Sensor:</label>
-                <select name="modifier_1_contact_sensor" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Sensor</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_1_contact_sensor', '') == i|string %}selected{% endif %}>
-                        Contact Sensor {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+            <div class="modifier-horizontal modifier-extend">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Contact sensor (1-4) that activates this modifier when opened. Configure sensor ID or use API endpoint in Settings">Trigger:</label>
+                    <select name="modifier_1_contact_sensor" class="narrow-input" form="scene-config-form">
+                        <option value="1" {% if scene_state.get('modifier_1_contact_sensor', '1') == '1' %}selected{% endif %}>1</option>
+                        {% for i in range(2, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_1_contact_sensor', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Minutes to extend scene when contact sensor opens">Extend Time (minutes):</label>
-                <input type="number" name="modifier_1_extend_minutes" class="narrow-input" min="1" max="60" form="scene-config-form"
-                       value="{{ scene_state.get('modifier_1_extend_minutes', 5) }}"
-                       placeholder="5">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Additional minutes to add to scene runtime when triggered - enter fixed value (e.g., '5') or range (e.g., '5-25') for random selection">Extend:</label>
+                    <input type="text" name="modifier_1_extend_minutes" class="narrow-input" pattern="[0-9\-]*" form="scene-config-form"
+                           value="{{ scene_state.get('modifier_1_extend_minutes', '5') }}"
+                           placeholder="5 or 5-25">
+                </div>
             </div>
         </div>
 
         <!-- Modifier 2: Enable Haptic Module -->
         <div id="modifier-2" class="tab-content">
             <div class="device-header">
-                <h3>⚡ HAPTIC TRIGGER</h3>
-                <label class="enable-checkbox">
+                <h3 class="tooltip" data-tooltip="When triggered, enables and initializes the selected PiShock device mid-scene and begins triggering at configured intervals">HAPTIC TRIGGER</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this modifier to allow mid-scene PiShock device activation via contact sensor trigger">
                     <input type="checkbox" name="modifier_2_enabled" form="scene-config-form"
                            {% if scene_state.get('modifier_2_enabled', False) %}checked{% endif %}>
                     ENABLE
                 </label>
             </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Contact sensor that triggers this modifier">Contact Sensor:</label>
-                <select name="modifier_2_contact_sensor" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Sensor</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_2_contact_sensor', '') == i|string %}selected{% endif %}>
-                        Contact Sensor {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+            <div class="modifier-horizontal">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Contact sensor (1-4) that activates this modifier when opened. Configure sensor ID or use API endpoint in Settings">Trigger:</label>
+                    <select name="modifier_2_contact_sensor" class="narrow-input" form="scene-config-form">
+                        <option value="1" {% if scene_state.get('modifier_2_contact_sensor', '1') == '1' %}selected{% endif %}>1</option>
+                        {% for i in range(2, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_2_contact_sensor', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Haptic module to enable when contact sensor opens">Target Haptic:</label>
-                <select name="modifier_2_target_haptic" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Haptic</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_2_target_haptic', '') == i|string %}selected{% endif %}>
-                        Haptic Module {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Which PiShock device (1-4) to enable when this modifier is triggered">Haptic:</label>
+                    <select name="modifier_2_target_haptic" class="narrow-input" form="scene-config-form">
+                        {% for i in range(1, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_2_target_haptic', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- Modifier 3: Trigger Bot -->
         <div id="modifier-3" class="tab-content">
             <div class="device-header">
-                <h3>🔘 BOT TRIGGER</h3>
-                <label class="enable-checkbox">
+                <h3 class="tooltip" data-tooltip="When triggered, enables and initializes the selected SwitchBot device mid-scene and begins triggering at configured intervals">BOT TRIGGER</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this modifier to allow mid-scene SwitchBot device activation via contact sensor trigger">
                     <input type="checkbox" name="modifier_3_enabled" form="scene-config-form"
                            {% if scene_state.get('modifier_3_enabled', False) %}checked{% endif %}>
                     ENABLE
                 </label>
             </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Contact sensor that triggers this modifier">Contact Sensor:</label>
-                <select name="modifier_3_contact_sensor" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Sensor</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_3_contact_sensor', '') == i|string %}selected{% endif %}>
-                        Contact Sensor {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+            <div class="modifier-horizontal">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Contact sensor (1-4) that activates this modifier when opened. Configure sensor ID or use API endpoint in Settings">Trigger:</label>
+                    <select name="modifier_3_contact_sensor" class="narrow-input" form="scene-config-form">
+                        <option value="1" {% if scene_state.get('modifier_3_contact_sensor', '1') == '1' %}selected{% endif %}>1</option>
+                        {% for i in range(2, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_3_contact_sensor', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="SwitchBot to trigger when contact sensor opens">Target Bot:</label>
-                <select name="modifier_3_target_bot" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Bot</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_3_target_bot', '') == i|string %}selected{% endif %}>
-                        SwitchBot {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Which SwitchBot device (1-4) to enable when this modifier is triggered">Bot:</label>
+                    <select name="modifier_3_target_bot" class="narrow-input" form="scene-config-form">
+                        {% for i in range(1, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_3_target_bot', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- Modifier 4: Enable Custom Accessory -->
         <div id="modifier-4" class="tab-content">
             <div class="device-header">
-                <h3>🔧 CUSTOM TRIGGER</h3>
-                <label class="enable-checkbox">
+                <h3 class="tooltip" data-tooltip="When triggered, enables the selected custom HTTP API accessory mid-scene and begins triggering at configured intervals">CUSTOM TRIGGER</h3>
+                <label class="enable-checkbox tooltip" data-tooltip="Enable this modifier to allow mid-scene custom accessory activation via contact sensor trigger">
                     <input type="checkbox" name="modifier_4_enabled" form="scene-config-form"
                            {% if scene_state.get('modifier_4_enabled', False) %}checked{% endif %}>
                     ENABLE
                 </label>
             </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Contact sensor that triggers this modifier">Contact Sensor:</label>
-                <select name="modifier_4_contact_sensor" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Sensor</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_4_contact_sensor', '') == i|string %}selected{% endif %}>
-                        Contact Sensor {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+            <div class="modifier-horizontal">
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Contact sensor (1-4) that activates this modifier when opened. Configure sensor ID or use API endpoint in Settings">Trigger:</label>
+                    <select name="modifier_4_contact_sensor" class="narrow-input" form="scene-config-form">
+                        <option value="1" {% if scene_state.get('modifier_4_contact_sensor', '1') == '1' %}selected{% endif %}>1</option>
+                        {% for i in range(2, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_4_contact_sensor', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label class="tooltip" data-tooltip="Custom accessory to enable when contact sensor opens">Target Custom:</label>
-                <select name="modifier_4_target_custom" class="narrow-input" form="scene-config-form">
-                    <option value="">Select Custom</option>
-                    {% for i in range(1, 5) %}
-                    <option value="{{ i }}" {% if scene_state.get('modifier_4_target_custom', '') == i|string %}selected{% endif %}>
-                        Custom Accessory {{ i }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="form-group">
+                    <label class="tooltip" data-tooltip="Which custom accessory (1-4) to enable when this modifier is triggered">Accessory:</label>
+                    <select name="modifier_4_target_custom" class="narrow-input" form="scene-config-form">
+                        {% for i in range(1, 5) %}
+                        <option value="{{ i }}" {% if scene_state.get('modifier_4_target_custom', '1') == i|string %}selected{% endif %}>
+                            {{ i }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -339,42 +320,45 @@
 <!-- Control Buttons -->
 <div class="control-buttons">
     <div class="control-panel">
-        <button type="submit" form="scene-config-form" class="btn btn-primary">💾 SAVE</button>
+        <button type="submit" form="scene-config-form" class="btn btn-primary">SAVE</button>
         
         <form method="POST" action="/start_scene" class="inline-form">
             <button type="submit" class="btn btn-success" {% if status.status == 'Running' %}disabled{% endif %}>
-                🚀 RUN
+                RUN
             </button>
         </form>
 
         {% if settings.get('interface', {}).get('developer_mode', False) %}
         <form method="POST" action="/start_scene_dry_run" class="inline-form">
             <button type="submit" class="btn btn-warning" {% if status.status == 'Running' %}disabled{% endif %}>
-                🧪 DRY RUN
+                DRY RUN
             </button>
         </form>
         {% endif %}
         
         <form method="POST" action="/stop_scene" class="inline-form">
             <button type="submit" class="btn btn-danger" {% if status.status == 'Idle' %}disabled{% endif %}>
-                🛑 STOP
+                STOP
             </button>
         </form>
         
         <form method="POST" action="/reset_config" class="inline-form">
             <button type="submit" class="btn btn-secondary">
-                🔄 DEFAULT
+                DEFAULT
             </button>
         </form>
     </div>
 </div>
 
 <script>
+    let currentSceneStatus = 'Idle'; // Track current scene status globally
+
     function updateStatus() {
         fetch('/status')
             .then(response => response.json())
             .then(data => {
-                
+                currentSceneStatus = data.status; // Update global status
+
                 // Update scene status display
                 const sceneStatusDiv = document.querySelector('#scene-status');
                 if (sceneStatusDiv) {
@@ -386,19 +370,33 @@
                     } else {
                         sceneStatusDiv.className = 'status-compact idle';
                     }
-                    
+
                     if (data.status === 'Running' || data.status === 'Waiting') {
-                        const statusIcon = data.status === 'Waiting' ? '⏳' : '⚡';
+                        const statusIcon = data.status === 'Waiting' ? '' : '⚡';
                         sceneStatusDiv.innerHTML = `${statusIcon} ${data.status} - ${data.remaining_minutes}:${data.remaining_seconds.toString().padStart(2, '0')} LEFT`;
                     } else {
-                        sceneStatusDiv.innerHTML = `⚡ ${data.status}`;
+                        sceneStatusDiv.innerHTML = `${data.status}`;
                     }
                 }
-                
+
+                // Update header timer and logo
+                const headerTimer = document.querySelector('#header-timer');
+                const headerLogo = document.querySelector('#header-logo');
+                if (headerTimer && headerLogo) {
+                    if (data.status === 'Running' || data.status === 'Waiting') {
+                        headerTimer.textContent = `${data.remaining_minutes}:${data.remaining_seconds.toString().padStart(2, '0')}`;
+                        headerTimer.style.display = 'block';
+                        headerLogo.style.display = 'none';
+                    } else {
+                        headerTimer.style.display = 'none';
+                        headerLogo.style.display = 'block';
+                    }
+                }
+
                 // Update button states
                 const startBtn = document.querySelector('.btn-success');
                 const stopBtn = document.querySelector('.btn-danger');
-                
+
                 if (startBtn) startBtn.disabled = (data.status === 'Running' || data.status === 'Waiting');
                 if (stopBtn) stopBtn.disabled = data.status === 'Idle';
             });
@@ -458,11 +456,171 @@
             });
         }
     });
-    
+
+    // Handle save form submission with AJAX
+    document.getElementById('scene-config-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        // Get form data
+        const formData = new FormData(this);
+
+        // Submit via AJAX
+        fetch('/save_scene_config', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                showSaveSuccess();
+            } else {
+                throw new Error('Save failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Could add error popup here if needed
+        });
+    });
+
+    // Show save success popup
+    function showSaveSuccess() {
+        const popup = document.getElementById('save-success-popup');
+        if (popup) {
+            popup.classList.add('show');
+
+            // Hide after 2 seconds
+            setTimeout(() => {
+                popup.classList.remove('show');
+                popup.classList.add('hide');
+
+                // Clean up hide class after animation
+                setTimeout(() => {
+                    popup.classList.remove('hide');
+                }, 400);
+            }, 2000);
+        }
+    }
+
+    // Show default restore success popup
+    function showDefaultSuccess() {
+        const popup = document.getElementById('save-success-popup');
+        if (popup) {
+            // Change text for default restore
+            popup.innerHTML = 'Default values restored successfully';
+            popup.classList.add('show');
+
+            // Hide after 2 seconds
+            setTimeout(() => {
+                popup.classList.remove('show');
+                popup.classList.add('hide');
+
+                // Reset text and clean up
+                setTimeout(() => {
+                    popup.innerHTML = 'Save successful';
+                    popup.classList.remove('hide');
+                }, 400);
+            }, 2000);
+        }
+    }
+
+    // Handle default/reset button
+    document.addEventListener('DOMContentLoaded', function() {
+        const resetForm = document.querySelector('form[action="/reset_config"]');
+        if (resetForm) {
+            resetForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+
+                // Submit via AJAX
+                fetch('/reset_config', {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showDefaultSuccess();
+                        // Reload the page after a short delay to show the reset values
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        throw new Error('Reset failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Could add error popup here if needed
+                });
+            });
+        }
+    });
+
+    function updateDeviceStates() {
+        fetch('/device_states')
+            .then(response => response.json())
+            .then(data => {
+                // Only update checkboxes when scene is running (to show modifier changes)
+                // When idle, leave checkboxes alone so user can configure them
+                const sceneIsRunning = (currentSceneStatus === 'Running' || currentSceneStatus === 'Waiting');
+
+                // Update PiShock devices
+                for (let i = 1; i <= 4; i++) {
+                    const checkbox = document.querySelector(`input[name="pishock_${i}_enabled"]`);
+                    const tabButton = document.querySelector(`.tab-button[onclick*="pishock-${i}"]`);
+                    const isEnabled = data.pishock[i];
+
+                    // Only update checkbox if scene is running
+                    if (checkbox && sceneIsRunning) checkbox.checked = isEnabled;
+                    // Always update tab button indicator
+                    if (tabButton) {
+                        const buttonText = tabButton.textContent;
+                        if (isEnabled && buttonText.includes('○')) {
+                            tabButton.textContent = buttonText.replace('○', '●');
+                        } else if (!isEnabled && buttonText.includes('●')) {
+                            tabButton.textContent = buttonText.replace('●', '○');
+                        }
+                    }
+                }
+
+                // Update SwitchBot devices
+                for (let i = 1; i <= 4; i++) {
+                    const checkbox = document.querySelector(`input[name="switchbot_${i}_enabled"]`);
+                    const tabButton = document.querySelector(`.tab-button[onclick*="switchbot-${i}"]`);
+                    const isEnabled = data.switchbot[i];
+
+                    if (checkbox && sceneIsRunning) checkbox.checked = isEnabled;
+                    if (tabButton) {
+                        const buttonText = tabButton.textContent;
+                        if (isEnabled && buttonText.includes('○')) {
+                            tabButton.textContent = buttonText.replace('○', '●');
+                        } else if (!isEnabled && buttonText.includes('●')) {
+                            tabButton.textContent = buttonText.replace('●', '○');
+                        }
+                    }
+                }
+
+                // Update Custom Accessories
+                for (let i = 1; i <= 4; i++) {
+                    const checkbox = document.querySelector(`input[name="custom_${i}_enabled"]`);
+                    const tabButton = document.querySelector(`.tab-button[onclick*="custom-${i}"]`);
+                    const isEnabled = data.custom[i];
+
+                    if (checkbox && sceneIsRunning) checkbox.checked = isEnabled;
+                    if (tabButton) {
+                        const buttonText = tabButton.textContent;
+                        if (isEnabled && buttonText.includes('○')) {
+                            tabButton.textContent = buttonText.replace('○', '●');
+                        } else if (!isEnabled && buttonText.includes('●')) {
+                            tabButton.textContent = buttonText.replace('●', '○');
+                        }
+                    }
+                }
+            });
+    }
+
     // Update every second
     setInterval(updateStatus, 1000);
     setInterval(updateStatusMessages, 1000);
-    
+    setInterval(updateDeviceStates, 1000);
+
     // Initial load
     updateStatusMessages();
 </script>

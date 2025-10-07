@@ -21,14 +21,25 @@ SCENE_STATE_FILE = 'data/scene_state.json'
 os.makedirs('data', exist_ok=True)
 
 scene_thread = None
+contact_sensor_monitor_thread = None  # Thread for monitoring contact sensors
 scene_active = False
 scene_end_time = None
 scene_delay_end_time = None  # When delay phase ends
 scene_in_delay = False  # Track if scene is in initial delay phase
 scene_execution_start_time = None  # When actual scene execution starts
+executed_modifiers = set()  # Track which modifiers have been executed (reset each scene)
 status_messages = deque(maxlen=50)  # Keep last 50 status messages
 popup_notification_queue = deque(maxlen=10)  # Queue for popup notifications
 audio_notification_queue = deque(maxlen=10)  # Queue for audio notifications
+contact_sensor_states = {}  # Global state tracking for contact sensors
+contact_sensor_devices = {}  # Global device references for contact sensors
+monitoring_switchbot_api = None  # Global switchbot API reference for monitoring thread
+monitoring_pishock_api = None  # Global pishock API reference for modifier actions
+monitoring_pishock_shockers = {}  # Global pishock device references for modifier actions
+monitoring_switchbot_devices = {}  # Global switchbot device references for modifier actions
+device_counts = {}  # Global device activation counters
+device_max_counts = {}  # Global device repeat limits
+original_device_states = {}  # Store original device enabled states before scene starts
 
 def load_version():
     """Load version from VERSION file"""
@@ -221,7 +232,7 @@ def load_scene_state():
         'custom_4_repeat': '',
         'modifier_1_enabled': False,
         'modifier_1_contact_sensor': '',
-        'modifier_1_extend_minutes': 5,
+        'modifier_1_extend_minutes': '5',
         'modifier_2_enabled': False,
         'modifier_2_contact_sensor': '',
         'modifier_2_target_haptic': '',
@@ -373,49 +384,145 @@ def get_parameter_value(scene_state, prefix, param_name, default_value):
         max_val = scene_state.get(f'{prefix}_{param_name}_random_max', default_value)
         return random.randint(min_val, max_val)
 
+def monitor_contact_sensors():
+    """Background thread to monitor contact sensors independently of main scene loop"""
+    global scene_active, contact_sensor_states, contact_sensor_devices, monitoring_switchbot_api
+    global monitoring_pishock_shockers, monitoring_switchbot_devices
+
+    print("CONTACT SENSOR MONITOR: Background monitoring thread started")
+
+    # Load scene state and settings
+    scene_state = load_scene_state()
+    settings = load_settings()
+
+    while scene_active:
+        try:
+            # Reload scene state each iteration to get latest configuration
+            scene_state = load_scene_state()
+            settings = load_settings()
+
+            # Check each configured contact sensor
+            for sensor_num, sensor_device in contact_sensor_devices.items():
+                try:
+                    sensor_id = settings.get('contact_sensors', {}).get(f'sensor_{sensor_num}_id', '')
+                    current_state = check_contact_sensor_status(monitoring_switchbot_api, sensor_id)
+                    previous_state = contact_sensor_states.get(sensor_num, False)
+
+                    # Detect state change from closed to open (trigger event)
+                    if not previous_state and current_state:
+                        print(f"CONTACT SENSOR {sensor_num}: State changed to OPEN - checking modifiers")
+                        add_status_message(f"Contact Sensor {sensor_num} opened")
+                        trigger_popup_notification('contact_sensor', sensor_num, "Sensor Opened")
+
+                        # Check all modifiers that use this sensor
+                        for modifier_i in range(1, 5):
+                            if (scene_state.get(f'modifier_{modifier_i}_enabled', False) and
+                                scene_state.get(f'modifier_{modifier_i}_contact_sensor', '') == str(sensor_num)):
+
+                                print(f"MODIFIER {modifier_i}: Triggered by Contact Sensor {sensor_num}")
+                                # Pass device references from global variables
+                                execute_modifier_action(modifier_i, scene_state, settings,
+                                                       pishock_shockers=monitoring_pishock_shockers,
+                                                       switchbot_devices=monitoring_switchbot_devices)
+
+                    # Update stored state
+                    contact_sensor_states[sensor_num] = current_state
+
+                except Exception as e:
+                    print(f"CONTACT SENSOR ERROR: Failed to check sensor {sensor_num} - {e}")
+
+            # Check every 0.5 seconds for responsive monitoring
+            time.sleep(0.5)
+
+        except Exception as e:
+            print(f"CONTACT SENSOR MONITOR ERROR: {e}")
+            time.sleep(1)  # Sleep longer on error
+
+    print("CONTACT SENSOR MONITOR: Thread stopped")
+
 def execute_modifier_action(modifier_type, scene_state, settings, **kwargs):
     """Execute modifier action based on type"""
+    global executed_modifiers, scene_end_time, monitoring_pishock_shockers, monitoring_pishock_api
+    global monitoring_switchbot_devices, monitoring_switchbot_api, device_counts
+
+    # Check if this modifier has already been executed
+    if modifier_type in executed_modifiers:
+        print(f"MODIFIER {modifier_type}: Already executed, ignoring trigger")
+        add_status_message(f"Modifier {modifier_type} already executed - ignoring repeated trigger")
+        return
+
     if modifier_type == 1:  # Extend Scene Time
-        extend_minutes = scene_state.get('modifier_1_extend_minutes', 5)
+        extend_value = scene_state.get('modifier_1_extend_minutes', '5')
+
+        # Parse extend value (could be "5" or "5-25")
+        if '-' in str(extend_value):
+            min_val, max_val = map(int, str(extend_value).split('-'))
+            extend_minutes = random.randint(min_val, max_val)
+        else:
+            extend_minutes = int(extend_value)
+
         extend_seconds = extend_minutes * 60
 
         # Update global scene end time
-        global scene_end_time
         if scene_end_time:
             scene_end_time = scene_end_time + timedelta(seconds=extend_seconds)
-            add_status_message(f"Scene extended by {extend_minutes} minutes")
+            add_status_message(f"Scene extended by {extend_minutes} minutes (from range: {extend_value})")
             trigger_popup_notification('modifier', 1, f"Scene Extended | +{extend_minutes} minutes")
             trigger_audio_notification(f"Scene extended by {extend_minutes} minutes")
-            print(f"MODIFIER 1: Scene extended by {extend_minutes} minutes")
+            print(f"MODIFIER 1: Scene extended by {extend_minutes} minutes (from range: {extend_value})")
+            executed_modifiers.add(modifier_type)
 
     elif modifier_type == 2:  # Enable Haptic Module
         target_haptic = scene_state.get('modifier_2_target_haptic', '')
-        if target_haptic and 'pishock_shockers' in kwargs:
-            pishock_shockers = kwargs['pishock_shockers']
+        if target_haptic:
             haptic_num = int(target_haptic)
 
             # Enable the haptic module in scene state dynamically
             scene_state[f'pishock_{haptic_num}_enabled'] = True
+            save_scene_state(scene_state)  # Persist to file for dashboard updates
+
+            # Initialize device if not already active
+            if haptic_num not in monitoring_pishock_shockers and monitoring_pishock_api:
+                sharecode = settings.get('pishock', {}).get(f'sharecode_{haptic_num}', '')
+                if sharecode:
+                    try:
+                        monitoring_pishock_shockers[haptic_num] = monitoring_pishock_api.shocker(sharecode)
+                        device_counts[f'pishock_{haptic_num}'] = 0  # Initialize counter
+                        print(f"MODIFIER 2: Initialized Haptic Module {haptic_num} (Sharecode: {sharecode})")
+                    except Exception as e:
+                        print(f"MODIFIER 2 ERROR: Failed to initialize Haptic Module {haptic_num} - {e}")
+
             add_status_message(f"Haptic Module {haptic_num} enabled by modifier")
             trigger_popup_notification('modifier', 2, f"Haptic {haptic_num} Enabled")
             trigger_audio_notification(f"Haptic {haptic_num} enabled")
             print(f"MODIFIER 2: Enabled Haptic Module {haptic_num}")
+            executed_modifiers.add(modifier_type)
 
-    elif modifier_type == 3:  # Trigger Bot
+    elif modifier_type == 3:  # Enable Bot
         target_bot = scene_state.get('modifier_3_target_bot', '')
-        if target_bot and 'switchbot_devices' in kwargs:
-            switchbot_devices = kwargs['switchbot_devices']
+        if target_bot:
             bot_num = int(target_bot)
 
-            if bot_num in switchbot_devices:
-                try:
-                    switchbot_devices[bot_num].press()
-                    add_status_message(f"SwitchBot {bot_num} triggered by modifier")
-                    trigger_popup_notification('modifier', 3, f"SwitchBot {bot_num} Triggered")
-                    trigger_audio_notification(f"SwitchBot {bot_num} triggered")
-                    print(f"MODIFIER 3: Triggered SwitchBot {bot_num}")
-                except Exception as e:
-                    print(f"MODIFIER 3 ERROR: Failed to trigger SwitchBot {bot_num} - {e}")
+            # Enable the switchbot in scene state dynamically
+            scene_state[f'switchbot_{bot_num}_enabled'] = True
+            save_scene_state(scene_state)  # Persist to file for dashboard updates
+
+            # Initialize device if not already active
+            if bot_num not in monitoring_switchbot_devices and monitoring_switchbot_api:
+                device_id = settings.get('switchbot', {}).get(f'device_{bot_num}_id', '')
+                if device_id:
+                    try:
+                        monitoring_switchbot_devices[bot_num] = monitoring_switchbot_api.device(id=device_id)
+                        device_counts[f'switchbot_{bot_num}'] = 0  # Initialize counter
+                        print(f"MODIFIER 3: Initialized SwitchBot {bot_num} (ID: {device_id})")
+                    except Exception as e:
+                        print(f"MODIFIER 3 ERROR: Failed to initialize SwitchBot {bot_num} - {e}")
+
+            add_status_message(f"SwitchBot {bot_num} enabled by modifier")
+            trigger_popup_notification('modifier', 3, f"SwitchBot {bot_num} Enabled")
+            trigger_audio_notification(f"SwitchBot {bot_num} enabled")
+            print(f"MODIFIER 3: Enabled SwitchBot {bot_num}")
+            executed_modifiers.add(modifier_type)
 
     elif modifier_type == 4:  # Enable Custom Accessory
         target_custom = scene_state.get('modifier_4_target_custom', '')
@@ -424,10 +531,17 @@ def execute_modifier_action(modifier_type, scene_state, settings, **kwargs):
 
             # Enable the custom accessory in scene state dynamically
             scene_state[f'custom_{custom_num}_enabled'] = True
+            save_scene_state(scene_state)  # Persist to file for dashboard updates
+
+            # Initialize counter if not already set
+            if f'custom_{custom_num}' not in device_counts:
+                device_counts[f'custom_{custom_num}'] = 0
+
             add_status_message(f"Custom Accessory {custom_num} enabled by modifier")
             trigger_popup_notification('modifier', 4, f"Custom {custom_num} Enabled")
             trigger_audio_notification(f"Custom {custom_num} enabled")
             print(f"MODIFIER 4: Enabled Custom Accessory {custom_num}")
+            executed_modifiers.add(modifier_type)
 
 def call_custom_api(endpoint_url, method, payload, device_number, description, dry_run=False):
     """Call a custom API endpoint with specified method and payload"""
@@ -593,7 +707,15 @@ def save_settings_route():
     }
     save_settings(settings)
     print("SETTINGS: Configuration saved successfully")
-    return redirect(url_for('settings'))
+
+    # Check if this is an AJAX request
+    is_ajax = (request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+               request.headers.get('Content-Type') == 'application/x-www-form-urlencoded' or
+               request.headers.get('Sec-Fetch-Mode') == 'cors')
+    if is_ajax:
+        return jsonify({"success": True, "message": "Settings saved successfully"})
+    else:
+        return redirect(url_for('settings'))
 
 @app.route('/check_updates')
 def check_updates():
@@ -761,7 +883,7 @@ def save_scene_config():
 
         # Modifier-specific settings
         if i == 1:  # Extend Time
-            scene_state[f'{prefix}_extend_minutes'] = int(request.form.get(f'{prefix}_extend_minutes', 5))
+            scene_state[f'{prefix}_extend_minutes'] = request.form.get(f'{prefix}_extend_minutes', '5')
         elif i == 2:  # Haptic Trigger
             scene_state[f'{prefix}_target_haptic'] = request.form.get(f'{prefix}_target_haptic', '')
         elif i == 3:  # Bot Trigger
@@ -771,7 +893,16 @@ def save_scene_config():
 
     save_scene_state(scene_state)
     print("SCENE CONFIG: Configuration saved successfully")
-    return redirect(url_for('dashboard'))
+
+    # Check if request is AJAX/fetch by looking for JSON acceptance or specific header
+    is_ajax = (request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+               'application/json' in request.headers.get('Accept', '') or
+               request.headers.get('Sec-Fetch-Mode') == 'cors')
+
+    if is_ajax:
+        return jsonify({"success": True, "message": "Configuration saved successfully"})
+    else:
+        return redirect(url_for('dashboard'))
 
 @app.route('/start_scene', methods=['POST'])
 def start_scene():
@@ -829,16 +960,56 @@ def clear_status_log():
 @app.route('/reset_config', methods=['POST'])
 def reset_config():
     print("SCENE CONFIG: Resetting to default configuration")
-    default_state = load_scene_state()  # This will return defaults if file doesn't exist
-    # Clear the file to force defaults
-    if os.path.exists(SCENE_STATE_FILE):
-        os.remove(SCENE_STATE_FILE)
-    add_status_message("Configuration reset to defaults")
-    return redirect(url_for('dashboard'))
+
+    # Load defaults from the default file
+    default_file_path = 'data/scene_state_default.json'
+    if os.path.exists(default_file_path):
+        with open(default_file_path, 'r') as f:
+            default_state = json.load(f)
+
+        # Write the default state to the scene state file
+        with open(SCENE_STATE_FILE, 'w') as f:
+            json.dump(default_state, f, indent=2)
+
+        add_status_message("Configuration reset to defaults")
+        print("SCENE CONFIG: Default values loaded from scene_state_default.json")
+    else:
+        # Fallback to old method if default file doesn't exist
+        if os.path.exists(SCENE_STATE_FILE):
+            os.remove(SCENE_STATE_FILE)
+        add_status_message("Configuration reset to defaults")
+        print("SCENE CONFIG: Default file not found, using fallback method")
+
+    # Check if request is AJAX/fetch by looking for JSON acceptance or specific header
+    is_ajax = (request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+               'application/json' in request.headers.get('Accept', '') or
+               request.headers.get('Sec-Fetch-Mode') == 'cors')
+
+    if is_ajax:
+        return jsonify({"success": True, "message": "Default values restored successfully"})
+    else:
+        return redirect(url_for('dashboard'))
 
 @app.route('/status')
 def status():
     return jsonify(get_scene_status())
+
+@app.route('/device_states')
+def device_states():
+    """Get current enabled states of all devices"""
+    scene_state = load_scene_state()
+    states = {
+        'pishock': {},
+        'switchbot': {},
+        'custom': {}
+    }
+
+    for i in range(1, 5):
+        states['pishock'][i] = scene_state.get(f'pishock_{i}_enabled', False)
+        states['switchbot'][i] = scene_state.get(f'switchbot_{i}_enabled', False)
+        states['custom'][i] = scene_state.get(f'custom_{i}_enabled', False)
+
+    return jsonify(states)
 
 @app.route('/popup_notifications')
 def get_popup_notifications():
@@ -957,7 +1128,9 @@ def test_maglock():
 
 @app.route('/test_killswitch', methods=['POST'])
 def test_killswitch():
-    """Test killswitch component"""
+    """Test killswitch component - simulates plug being OFF if scene is running"""
+    global scene_active, scene_end_time, scene_delay_end_time, scene_in_delay, scene_execution_start_time
+
     try:
         data = request.get_json()
         test_type = data.get('type')  # 'plug' or 'api'
@@ -970,31 +1143,55 @@ def test_killswitch():
             if not plug_id:
                 return jsonify({'success': False, 'message': 'Killswitch plug not configured'})
 
-            # Initialize Switchbot API
-            switchbot_api = None
-            if settings.get('switchbot', {}).get('token'):
-                try:
-                    switchbot_api = SwitchBot(
-                        token=settings['switchbot']['token'],
-                        secret=settings['switchbot']['secret']
-                    )
+            # If scene is running, simulate killswitch trigger (plug OFF)
+            if scene_active:
+                print("KILLSWITCH TEST: Simulating plug OFF - triggering emergency stop")
+                add_status_message("Scene terminated - killswitch activated (TEST)")
+                trigger_audio_notification("Scene terminated by killswitch")
+                trigger_popup_notification('killswitch', 'activated', "Killswitch Activated - Scene Terminated (TEST)")
 
-                    # Test killswitch plug status
-                    status = check_killswitch_status(switchbot_api, plug_id)
+                # Call optional API endpoint
+                api_endpoint = settings.get('killswitch', {}).get('api_endpoint', '')
+                if api_endpoint:
+                    call_webhook(api_endpoint, "Killswitch API (TEST)")
 
-                    add_status_message(f"Killswitch plug test - Status: {'ON' if status else 'OFF/ERROR'}")
+                # Stop the scene
+                scene_active = False
+                scene_end_time = None
+                scene_delay_end_time = None
+                scene_in_delay = False
+                scene_execution_start_time = None
 
-                    return jsonify({
-                        'success': True,
-                        'message': f'Killswitch plug responded - Status: {"ON" if status else "OFF/ERROR"}',
-                        'status': status
-                    })
-
-                except Exception as e:
-                    add_status_message(f"Killswitch plug test failed - {str(e)}")
-                    return jsonify({'success': False, 'message': f'Test failed: {str(e)}'})
+                return jsonify({
+                    'success': True,
+                    'message': 'Killswitch triggered - scene terminated'
+                })
             else:
-                return jsonify({'success': False, 'message': 'Switchbot API not configured'})
+                # Scene not running, just test the plug status
+                switchbot_api = None
+                if settings.get('switchbot', {}).get('token'):
+                    try:
+                        switchbot_api = SwitchBot(
+                            token=settings['switchbot']['token'],
+                            secret=settings['switchbot']['secret']
+                        )
+
+                        # Test killswitch plug status
+                        status = check_killswitch_status(switchbot_api, plug_id)
+
+                        add_status_message(f"Killswitch plug test - Status: {'ON' if status else 'OFF/ERROR'}")
+
+                        return jsonify({
+                            'success': True,
+                            'message': f'Killswitch plug responded - Status: {"ON" if status else "OFF/ERROR"}',
+                            'status': status
+                        })
+
+                    except Exception as e:
+                        add_status_message(f"Killswitch plug test failed - {str(e)}")
+                        return jsonify({'success': False, 'message': f'Test failed: {str(e)}'})
+                else:
+                    return jsonify({'success': False, 'message': 'Switchbot API not configured'})
 
         elif test_type == 'api':
             api_endpoint = settings.get('killswitch', {}).get('api_endpoint', '')
@@ -1072,6 +1269,93 @@ def test_custom_payload():
     except Exception as e:
         return jsonify({'success': False, 'error': f'Unexpected error: {str(e)}'})
 
+@app.route('/trigger1', methods=['GET', 'POST'])
+def trigger_contact_sensor_1():
+    """Trigger contact sensor 1 modifiers via API"""
+    return trigger_contact_sensor_api(1)
+
+@app.route('/trigger2', methods=['GET', 'POST'])
+def trigger_contact_sensor_2():
+    """Trigger contact sensor 2 modifiers via API"""
+    return trigger_contact_sensor_api(2)
+
+@app.route('/trigger3', methods=['GET', 'POST'])
+def trigger_contact_sensor_3():
+    """Trigger contact sensor 3 modifiers via API"""
+    return trigger_contact_sensor_api(3)
+
+@app.route('/trigger4', methods=['GET', 'POST'])
+def trigger_contact_sensor_4():
+    """Trigger contact sensor 4 modifiers via API"""
+    return trigger_contact_sensor_api(4)
+
+def trigger_contact_sensor_api(sensor_num):
+    """Common function to trigger contact sensor modifiers via API"""
+    try:
+        # Only trigger if scene is active
+        if not scene_active:
+            return jsonify({
+                'success': False,
+                'message': f'Contact sensor {sensor_num} triggered but no scene is active'
+            })
+
+        settings = load_settings()
+        scene_state = load_scene_state()
+
+        # Initialize devices (similar to how it's done in run_scene)
+        pishock_shockers = []
+        for i in range(1, 5):
+            if scene_state.get(f'pishock_{i}_enabled', False):
+                pishock_shockers.append({
+                    'name': settings.get(f'pishock_{i}_name', ''),
+                    'api_key': settings.get(f'pishock_{i}_api_key', ''),
+                    'username': settings.get(f'pishock_{i}_username', ''),
+                    'code': settings.get(f'pishock_{i}_code', ''),
+                    'sharecode': settings.get(f'pishock_{i}_sharecode', '')
+                })
+            else:
+                pishock_shockers.append(None)
+
+        switchbot_devices = []
+        for i in range(1, 5):
+            if scene_state.get(f'switchbot_{i}_enabled', False):
+                switchbot_devices.append({
+                    'device_id': settings.get(f'switchbot_{i}_device_id', ''),
+                    'token': settings.get('switchbot_token', ''),
+                    'secret': settings.get('switchbot_secret', '')
+                })
+            else:
+                switchbot_devices.append(None)
+
+        # Check for modifiers triggered by this sensor
+        triggered_modifiers = []
+        for modifier_i in range(1, 5):
+            if (scene_state.get(f'modifier_{modifier_i}_enabled', False) and
+                scene_state.get(f'modifier_{modifier_i}_contact_sensor', '') == str(sensor_num)):
+
+                triggered_modifiers.append(modifier_i)
+                add_status_message(f"API triggered Contact Sensor {sensor_num} - Modifier {modifier_i} activated")
+                execute_modifier_action(modifier_i, scene_state, settings,
+                                       pishock_shockers=pishock_shockers,
+                                       switchbot_devices=switchbot_devices)
+
+        if triggered_modifiers:
+            return jsonify({
+                'success': True,
+                'message': f'Contact sensor {sensor_num} triggered via API - Activated modifiers: {", ".join(map(str, triggered_modifiers))}'
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'message': f'Contact sensor {sensor_num} triggered via API but no modifiers configured for this sensor'
+            })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'Error triggering contact sensor {sensor_num}: {str(e)}'
+        })
+
 def get_scene_status():
     global scene_active, scene_end_time, scene_delay_end_time, scene_in_delay, scene_execution_start_time
     if scene_active:
@@ -1095,6 +1379,7 @@ def get_scene_status():
 
 def run_scene(dry_run=False):
     global scene_active, scene_end_time, scene_delay_end_time, scene_in_delay, scene_execution_start_time
+    global original_device_states
 
     if dry_run:
         print("SCENE: Loading settings and scene state (DRY RUN MODE)")
@@ -1102,9 +1387,19 @@ def run_scene(dry_run=False):
         print("SCENE: Loading settings and scene state")
     settings = load_settings()
     scene_state = load_scene_state()
-    
+
+    # Save original device states before scene starts
+    original_device_states = {
+        'pishock': {i: scene_state.get(f'pishock_{i}_enabled', False) for i in range(1, 5)},
+        'switchbot': {i: scene_state.get(f'switchbot_{i}_enabled', False) for i in range(1, 5)},
+        'custom': {i: scene_state.get(f'custom_{i}_enabled', False) for i in range(1, 5)}
+    }
+    print(f"SCENE: Saved original device states: {original_device_states}")
+
     scene_active = True
     scene_in_delay = False  # Initialize delay flag
+    executed_modifiers.clear()  # Reset executed modifiers for new scene
+    status_messages.clear()  # Clear status log for new scene
     
     # Determine scene duration first
     if scene_state['scene_duration_type'] == 'fixed':
@@ -1176,10 +1471,15 @@ def run_scene(dry_run=False):
         trigger_popup_notification('lock', 'engage', "Lock Engaged" + (" (DRY RUN)" if dry_run else ""))
     
     # Initialize APIs
+    global monitoring_pishock_shockers, monitoring_switchbot_devices, monitoring_switchbot_api, monitoring_pishock_api, device_counts, device_max_counts
     switchbot_api = None
     pishock_api = None
-    switchbot_devices = {}
-    pishock_shockers = {}
+    monitoring_pishock_shockers = {}  # Reset global references
+    monitoring_switchbot_devices = {}  # Reset global references
+    monitoring_switchbot_api = None
+    monitoring_pishock_api = None
+    device_counts = {}
+    device_max_counts = {}
 
     if dry_run:
         print("API: Skipping real API initialization (DRY RUN MODE)")
@@ -1187,17 +1487,17 @@ def run_scene(dry_run=False):
         # In dry run mode, simulate device initialization for enabled devices
         for i in range(1, 5):
             if scene_state.get(f'switchbot_{i}_enabled', False):
-                switchbot_devices[i] = f"dry_run_device_{i}"  # Placeholder
+                monitoring_switchbot_devices[i] = f"dry_run_device_{i}"  # Placeholder
                 add_status_message(f"Switchbot {i} ready (DRY RUN)")
             if scene_state.get(f'pishock_{i}_enabled', False):
-                pishock_shockers[i] = f"dry_run_shocker_{i}"  # Placeholder
+                monitoring_pishock_shockers[i] = f"dry_run_shocker_{i}"  # Placeholder
                 add_status_message(f"Haptic Module {i} ready (DRY RUN)")
     else:
         # Initialize Switchbot API
         if settings.get('switchbot', {}).get('token'):
             try:
                 print("API: Initializing Switchbot API")
-                switchbot_api = SwitchBot(
+                monitoring_switchbot_api = SwitchBot(
                     token=settings['switchbot']['token'],
                     secret=settings['switchbot']['secret']
                 )
@@ -1207,7 +1507,7 @@ def run_scene(dry_run=False):
                     device_id = settings.get('switchbot', {}).get(f'device_{i}_id', '')
                     if device_id and scene_state.get(f'switchbot_{i}_enabled', False):
                         try:
-                            switchbot_devices[i] = switchbot_api.device(id=device_id)
+                            monitoring_switchbot_devices[i] = monitoring_switchbot_api.device(id=device_id)
                             print(f"API: Switchbot device {i} initialized (ID: {device_id})")
                             add_status_message(f"Switchbot {i} ready")
                         except Exception as e:
@@ -1221,7 +1521,7 @@ def run_scene(dry_run=False):
         if settings.get('pishock', {}).get('username'):
             try:
                 print("API: Initializing PiShock API")
-                pishock_api = PiShockAPI(
+                monitoring_pishock_api = PiShockAPI(
                     settings['pishock']['username'],
                     settings['pishock']['api_key']
                 )
@@ -1231,7 +1531,7 @@ def run_scene(dry_run=False):
                     sharecode = settings.get('pishock', {}).get(f'sharecode_{i}', '')
                     if sharecode and scene_state.get(f'pishock_{i}_enabled', False):
                         try:
-                            pishock_shockers[i] = pishock_api.shocker(sharecode)
+                            monitoring_pishock_shockers[i] = monitoring_pishock_api.shocker(sharecode)
                             print(f"API: PiShock device {i} initialized (Sharecode: {sharecode})")
                             add_status_message(f"Haptic Module {i} ready")
                         except Exception as e:
@@ -1240,43 +1540,53 @@ def run_scene(dry_run=False):
             except Exception as e:
                 print(f"API ERROR: PiShock API initialization failed - {e}")
                 add_status_message("Haptic API initialization failed")
-    
-    # Track accessory usage
-    device_counts = {}
-    device_max_counts = {}
-    
-    # Initialize counters for all devices
+
+    # Initialize counters for all devices (no repeat limits - unlimited usage)
     for i in range(1, 5):
         device_counts[f'pishock_{i}'] = 0
-        repeat_val = scene_state.get(f'pishock_{i}_repeat', '')
-        device_max_counts[f'pishock_{i}'] = int(repeat_val) if repeat_val else None
-    
+        device_max_counts[f'pishock_{i}'] = None  # Unlimited repeats
+
     for i in range(1, 5):
         device_counts[f'switchbot_{i}'] = 0
-        repeat_val = scene_state.get(f'switchbot_{i}_repeat', '')
-        device_max_counts[f'switchbot_{i}'] = int(repeat_val) if repeat_val else None
+        device_max_counts[f'switchbot_{i}'] = None  # Unlimited repeats
 
     for i in range(1, 5):
         device_counts[f'custom_{i}'] = 0
-        repeat_val = scene_state.get(f'custom_{i}_repeat', '')
-        device_max_counts[f'custom_{i}'] = int(repeat_val) if repeat_val else None
+        device_max_counts[f'custom_{i}'] = None  # Unlimited repeats
 
     # Initialize contact sensor state tracking for modifiers
+    global contact_sensor_states, contact_sensor_devices, contact_sensor_monitor_thread
     contact_sensor_states = {}
     contact_sensor_devices = {}
 
-    # Initialize contact sensors for monitoring
+    # Initialize contact sensors for monitoring - only if in CLOSED state
     for i in range(1, 5):
         sensor_id = settings.get('contact_sensors', {}).get(f'sensor_{i}_id', '')
-        if sensor_id and switchbot_api:
+        if sensor_id and monitoring_switchbot_api:
             try:
-                contact_sensor_devices[i] = switchbot_api.device(id=sensor_id)
-                # Get initial state
-                initial_state = check_contact_sensor_status(switchbot_api, sensor_id)
-                contact_sensor_states[i] = initial_state
-                print(f"CONTACT SENSOR: Sensor {i} initialized (ID: {sensor_id}) - Initial state: {'open' if initial_state else 'closed'}")
+                # Get initial state first
+                initial_state = check_contact_sensor_status(monitoring_switchbot_api, sensor_id)
+
+                # Only add sensor if it's CLOSED (False means closed)
+                if not initial_state:  # Closed state
+                    contact_sensor_devices[i] = monitoring_switchbot_api.device(id=sensor_id)
+                    contact_sensor_states[i] = initial_state
+                    print(f"CONTACT SENSOR: Sensor {i} initialized (ID: {sensor_id}) - State: CLOSED")
+                    add_status_message(f"Contact Sensor {i} ready - CLOSED")
+                else:  # Open state - ignore
+                    print(f"CONTACT SENSOR: Sensor {i} (ID: {sensor_id}) is OPEN - ignoring for scene")
+                    add_status_message(f"Contact Sensor {i} ignored - not in CLOSED state")
             except Exception as e:
                 print(f"CONTACT SENSOR ERROR: Failed to initialize sensor {i} - {e}")
+                add_status_message(f"Contact Sensor {i} error - ignoring for scene")
+
+    # Start contact sensor monitoring thread if any sensors are configured
+    if contact_sensor_devices and not dry_run:
+        contact_sensor_monitor_thread = threading.Thread(target=monitor_contact_sensors, daemon=True)
+        contact_sensor_monitor_thread.start()
+        print("CONTACT SENSOR MONITOR: Background monitoring thread started")
+    elif contact_sensor_devices and dry_run:
+        print("CONTACT SENSOR MONITOR: Skipping background thread (DRY RUN)")
 
     start_time = time.time()
     print(f"SCENE: Scene execution starting - will run for {duration} seconds")
@@ -1284,20 +1594,32 @@ def run_scene(dry_run=False):
     # Get killswitch settings
     killswitch_plug_id = settings.get('killswitch', {}).get('plug_id', '')
     killswitch_api_endpoint = settings.get('killswitch', {}).get('api_endpoint', '')
+    killswitch_enabled = False  # Track if killswitch is actually monitoring
 
-    # Check killswitch initially if configured
-    if killswitch_plug_id and not check_killswitch_status(switchbot_api, killswitch_plug_id):
-        print("KILLSWITCH: Plug is already off - terminating scene immediately")
-        add_status_message("Scene terminated - killswitch plug is off")
-        trigger_audio_notification("Scene terminated by killswitch")
-        trigger_popup_notification('killswitch', 'terminated', "Scene Terminated by Killswitch")
-        call_killswitch_api(killswitch_api_endpoint)
-        scene_active = False
-        return
+    # Verify killswitch is ON and connected before enabling monitoring
+    if killswitch_plug_id and monitoring_switchbot_api:
+        try:
+            killswitch_status = check_killswitch_status(monitoring_switchbot_api, killswitch_plug_id)
+            if killswitch_status:  # Plug is ON
+                killswitch_enabled = True
+                print(f"KILLSWITCH: Plug verified ON (ID: {killswitch_plug_id}) - monitoring enabled")
+                add_status_message("Killswitch monitoring enabled")
+            else:  # Plug is OFF or disconnected
+                print(f"KILLSWITCH: Plug is OFF or disconnected (ID: {killswitch_plug_id}) - ignoring for scene")
+                add_status_message("Killswitch ignored - plug not ON")
+                killswitch_plug_id = ''  # Disable monitoring
+        except Exception as e:
+            print(f"KILLSWITCH ERROR: Failed to verify plug status - {e}")
+            add_status_message("Killswitch error - ignoring for scene")
+            killswitch_plug_id = ''  # Disable monitoring
 
-    while time.time() - start_time < duration and scene_active:
+    # Use scene_end_time for loop condition so modifiers can extend the scene
+    while datetime.now() < scene_end_time and scene_active:
+        # Reload scene state each iteration to pick up modifier changes
+        scene_state = load_scene_state()
+
         # Check killswitch status every loop iteration
-        if killswitch_plug_id and not check_killswitch_status(switchbot_api, killswitch_plug_id):
+        if killswitch_plug_id and not check_killswitch_status(monitoring_switchbot_api, killswitch_plug_id):
             print("KILLSWITCH: Plug turned off - terminating scene")
             add_status_message("Scene terminated - killswitch activated")
             trigger_audio_notification("Scene terminated by killswitch")
@@ -1305,42 +1627,16 @@ def run_scene(dry_run=False):
             call_killswitch_api(killswitch_api_endpoint)
             break
 
-        # Check contact sensors for modifier triggers
-        for sensor_num, sensor_device in contact_sensor_devices.items():
-            try:
-                sensor_id = settings.get('contact_sensors', {}).get(f'sensor_{sensor_num}_id', '')
-                current_state = check_contact_sensor_status(switchbot_api, sensor_id)
-                previous_state = contact_sensor_states.get(sensor_num, False)
-
-                # Detect state change from closed to open (trigger event)
-                if not previous_state and current_state:
-                    print(f"CONTACT SENSOR {sensor_num}: State changed to OPEN - checking modifiers")
-                    add_status_message(f"Contact Sensor {sensor_num} opened")
-                    trigger_popup_notification('contact_sensor', sensor_num, "Sensor Opened")
-
-                    # Check all modifiers that use this sensor
-                    for modifier_i in range(1, 5):
-                        if (scene_state.get(f'modifier_{modifier_i}_enabled', False) and
-                            scene_state.get(f'modifier_{modifier_i}_contact_sensor', '') == str(sensor_num)):
-
-                            print(f"MODIFIER {modifier_i}: Triggered by Contact Sensor {sensor_num}")
-                            execute_modifier_action(modifier_i, scene_state, settings,
-                                                   pishock_shockers=pishock_shockers,
-                                                   switchbot_devices=switchbot_devices)
-
-                # Update stored state
-                contact_sensor_states[sensor_num] = current_state
-
-            except Exception as e:
-                print(f"CONTACT SENSOR ERROR: Failed to check sensor {sensor_num} - {e}")
+        # Note: Contact sensor monitoring is now handled by a separate background thread
+        # to avoid blocking during device activation delays
 
         current_time = time.time() - start_time
         
         # Process PiShock devices
         for i in range(1, 5):
             device_key = f'pishock_{i}'
-            if (scene_state.get(f'{device_key}_enabled', False) and 
-                i in pishock_shockers and 
+            if (scene_state.get(f'{device_key}_enabled', False) and
+                i in monitoring_pishock_shockers and
                 (device_max_counts[device_key] is None or device_counts[device_key] < device_max_counts[device_key])):
                 
                 if scene_state.get(f'{device_key}_interval_type') == 'fixed':
@@ -1359,17 +1655,32 @@ def run_scene(dry_run=False):
                         if dry_run:
                             print(f"PISHOCK {i} (DRY RUN): Triggering shock (intensity: {intensity}, duration: {duration_val}s)")
                             add_status_message(f"Haptic Module {i} activated ({device_counts[device_key] + 1} times) (DRY RUN)")
+                            # Trigger notifications for dry run
+                            trigger_popup_notification('pishock', i, f"Intensity: {intensity} | Duration: {duration_val}s (DRY RUN)")
+                            trigger_audio_notification(f"Shock {intensity} dry run")
                         else:
-                            pishock_shockers[i].vibrate(duration=duration_val, intensity=intensity)
-                            print(f"PISHOCK {i}: Triggering shock (intensity: {intensity}, duration: {duration_val}s)")
-                            pishock_shockers[i].shock(duration=duration_val, intensity=intensity)
+                            # Trigger notifications 2 seconds before vibration
+                            trigger_popup_notification('pishock', i, f"Intensity: {intensity} | Duration: {duration_val}s")
+                            trigger_audio_notification(f"Shock {intensity}")
+                            print(f"PISHOCK {i}: Pre-notification sent, waiting 2 seconds...")
+                            add_status_message(f"Haptic Module {i} notification sent, vibration in 2 seconds...")
+
+                            # Wait 2 seconds
+                            time.sleep(2)
+
+                            # Execute vibration
+                            monitoring_pishock_shockers[i].vibrate(duration=duration_val, intensity=intensity)
+                            print(f"PISHOCK {i}: Vibration executed, waiting 1 second before shock...")
+
+                            # Wait 1 second after vibration
+                            time.sleep(1)
+
+                            # Execute shock
+                            monitoring_pishock_shockers[i].shock(duration=duration_val, intensity=intensity)
+                            print(f"PISHOCK {i}: Shock delivered (intensity: {intensity}, duration: {duration_val}s)")
                             add_status_message(f"Haptic Module {i} activated ({device_counts[device_key] + 1} times)")
 
                         device_counts[device_key] += 1
-                        # Trigger popup notification
-                        trigger_popup_notification('pishock', i, f"Intensity: {intensity} | Duration: {duration_val}s" + (" (DRY RUN)" if dry_run else ""))
-                        # Trigger audio notification
-                        trigger_audio_notification(f"Shock {intensity}" + (" dry run" if dry_run else ""))
                     except Exception as e:
                         print(f"PISHOCK {i} ERROR: Trigger failed - {e}")
                         add_status_message(f"Haptic Module {i} failed to activate")
@@ -1377,8 +1688,8 @@ def run_scene(dry_run=False):
         # Process Switchbot devices
         for i in range(1, 5):
             device_key = f'switchbot_{i}'
-            if (scene_state.get(f'{device_key}_enabled', False) and 
-                i in switchbot_devices and 
+            if (scene_state.get(f'{device_key}_enabled', False) and
+                i in monitoring_switchbot_devices and
                 (device_max_counts[device_key] is None or device_counts[device_key] < device_max_counts[device_key])):
                 
                 if scene_state.get(f'{device_key}_interval_type') == 'fixed':
@@ -1398,7 +1709,7 @@ def run_scene(dry_run=False):
                             add_status_message(f"Switchbot {i} activated ({device_counts[device_key] + 1} times) (DRY RUN)")
                         else:
                             print(f"SWITCHBOT {i}: Triggering press (duration: {duration_val}s)")
-                            switchbot_devices[i].press()
+                            monitoring_switchbot_devices[i].press()
                             add_status_message(f"Switchbot {i} activated ({device_counts[device_key] + 1} times)")
 
                         device_counts[device_key] += 1
@@ -1477,7 +1788,21 @@ def run_scene(dry_run=False):
         else:
             print("SCENE: Scene stopped by user")
         add_status_message("Scene stopped")
-    
+
+    # Restore original device states
+    if original_device_states:
+        print(f"SCENE: Restoring original device states: {original_device_states}")
+        scene_state = load_scene_state()
+
+        for i in range(1, 5):
+            scene_state[f'pishock_{i}_enabled'] = original_device_states['pishock'][i]
+            scene_state[f'switchbot_{i}_enabled'] = original_device_states['switchbot'][i]
+            scene_state[f'custom_{i}_enabled'] = original_device_states['custom'][i]
+
+        save_scene_state(scene_state)
+        add_status_message("Device states restored to pre-scene configuration")
+        print("SCENE: Device states restored successfully")
+
     # Clean up scene state
     scene_active = False
     scene_end_time = None

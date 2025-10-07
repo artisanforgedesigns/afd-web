@@ -1,73 +1,73 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form method="POST" action="/save_settings">
+<form method="POST" action="/save_settings" id="settings-form">
     <!-- Device Accounts Side by Side -->
     <div class="settings-layout">
         <div class="section">
-            <h3>🔘 Switchbot Account</h3>
+            <h3>Switchbot Account</h3>
             <div class="form-group">
-                <label for="switchbot_token">Token:</label>
-                <input type="text" id="switchbot_token" name="switchbot_token" 
+                <label for="switchbot_token" class="tooltip" data-tooltip="Get your API token from the SwitchBot app: Profile → Settings → App Version (tap 10 times) → Developer Options">Token:</label>
+                <input type="text" id="switchbot_token" name="switchbot_token"
                        value="{{ settings.get('switchbot', {}).get('token', '') }}" required>
             </div>
             <div class="form-group">
-                <label for="switchbot_secret">Secret:</label>
-                <input type="text" id="switchbot_secret" name="switchbot_secret" 
+                <label for="switchbot_secret" class="tooltip" data-tooltip="Get your API secret from the SwitchBot app: Profile → Settings → App Version (tap 10 times) → Developer Options">Secret:</label>
+                <input type="text" id="switchbot_secret" name="switchbot_secret"
                        value="{{ settings.get('switchbot', {}).get('secret', '') }}" required>
             </div>
             <div class="form-group">
-                <label for="switchbot_device_1_id">Device 1 ID:</label>
-                <input type="text" id="switchbot_device_1_id" name="switchbot_device_1_id" 
+                <label for="switchbot_device_1_id" class="tooltip" data-tooltip="Find Device ID in SwitchBot app: tap on the device → Settings (gear icon) → Device Info">Device 1 ID:</label>
+                <input type="text" id="switchbot_device_1_id" name="switchbot_device_1_id"
                        value="{{ settings.get('switchbot', {}).get('device_1_id', '') }}">
             </div>
             <div class="form-group">
-                <label for="switchbot_device_2_id">Device 2 ID:</label>
-                <input type="text" id="switchbot_device_2_id" name="switchbot_device_2_id" 
+                <label for="switchbot_device_2_id" class="tooltip" data-tooltip="Find Device ID in SwitchBot app: tap on the device → Settings (gear icon) → Device Info">Device 2 ID:</label>
+                <input type="text" id="switchbot_device_2_id" name="switchbot_device_2_id"
                        value="{{ settings.get('switchbot', {}).get('device_2_id', '') }}">
             </div>
             <div class="form-group">
-                <label for="switchbot_device_3_id">Device 3 ID:</label>
-                <input type="text" id="switchbot_device_3_id" name="switchbot_device_3_id" 
+                <label for="switchbot_device_3_id" class="tooltip" data-tooltip="Find Device ID in SwitchBot app: tap on the device → Settings (gear icon) → Device Info">Device 3 ID:</label>
+                <input type="text" id="switchbot_device_3_id" name="switchbot_device_3_id"
                        value="{{ settings.get('switchbot', {}).get('device_3_id', '') }}">
             </div>
             <div class="form-group">
-                <label for="switchbot_device_4_id">Device 4 ID:</label>
-                <input type="text" id="switchbot_device_4_id" name="switchbot_device_4_id" 
+                <label for="switchbot_device_4_id" class="tooltip" data-tooltip="Find Device ID in SwitchBot app: tap on the device → Settings (gear icon) → Device Info">Device 4 ID:</label>
+                <input type="text" id="switchbot_device_4_id" name="switchbot_device_4_id"
                        value="{{ settings.get('switchbot', {}).get('device_4_id', '') }}">
             </div>
         </div>
-        
+
         <div class="section">
-            <h3>⚡ PiShock Account</h3>
+            <h3>PiShock Account</h3>
             <div class="form-group">
-                <label for="pishock_username">Username:</label>
-                <input type="text" id="pishock_username" name="pishock_username" 
+                <label for="pishock_username" class="tooltip" data-tooltip="Your PiShock.com account username (required for API access)">Username:</label>
+                <input type="text" id="pishock_username" name="pishock_username"
                        value="{{ settings.get('pishock', {}).get('username', '') }}" required>
             </div>
             <div class="form-group">
-                <label for="pishock_api_key">API Key:</label>
-                <input type="text" id="pishock_api_key" name="pishock_api_key" 
+                <label for="pishock_api_key" class="tooltip" data-tooltip="Get your API key from PiShock.com: Account → API Key">API Key:</label>
+                <input type="text" id="pishock_api_key" name="pishock_api_key"
                        value="{{ settings.get('pishock', {}).get('api_key', '') }}" required>
             </div>
             <div class="form-group">
-                <label for="pishock_sharecode_1">Sharecode 1:</label>
-                <input type="text" id="pishock_sharecode_1" name="pishock_sharecode_1" 
+                <label for="pishock_sharecode_1" class="tooltip" data-tooltip="Find share code on PiShock.com: select your device → Share Codes tab → create or copy existing code">Sharecode 1:</label>
+                <input type="text" id="pishock_sharecode_1" name="pishock_sharecode_1"
                        value="{{ settings.get('pishock', {}).get('sharecode_1', '') }}">
             </div>
             <div class="form-group">
-                <label for="pishock_sharecode_2">Sharecode 2:</label>
-                <input type="text" id="pishock_sharecode_2" name="pishock_sharecode_2" 
+                <label for="pishock_sharecode_2" class="tooltip" data-tooltip="Find share code on PiShock.com: select your device → Share Codes tab → create or copy existing code">Sharecode 2:</label>
+                <input type="text" id="pishock_sharecode_2" name="pishock_sharecode_2"
                        value="{{ settings.get('pishock', {}).get('sharecode_2', '') }}">
             </div>
             <div class="form-group">
-                <label for="pishock_sharecode_3">Sharecode 3:</label>
-                <input type="text" id="pishock_sharecode_3" name="pishock_sharecode_3" 
+                <label for="pishock_sharecode_3" class="tooltip" data-tooltip="Find share code on PiShock.com: select your device → Share Codes tab → create or copy existing code">Sharecode 3:</label>
+                <input type="text" id="pishock_sharecode_3" name="pishock_sharecode_3"
                        value="{{ settings.get('pishock', {}).get('sharecode_3', '') }}">
             </div>
             <div class="form-group">
-                <label for="pishock_sharecode_4">Sharecode 4:</label>
-                <input type="text" id="pishock_sharecode_4" name="pishock_sharecode_4" 
+                <label for="pishock_sharecode_4" class="tooltip" data-tooltip="Find share code on PiShock.com: select your device → Share Codes tab → create or copy existing code">Sharecode 4:</label>
+                <input type="text" id="pishock_sharecode_4" name="pishock_sharecode_4"
                        value="{{ settings.get('pishock', {}).get('sharecode_4', '') }}">
             </div>
         </div>
@@ -76,10 +76,10 @@
     <!-- Contact Sensors and Custom Accessories Side by Side -->
     <div class="settings-layout">
         <div class="section">
-            <h3>📡 Contact Sensors</h3>
+            <h3>Contact Sensors</h3>
             {% for i in range(1, 5) %}
             <div class="form-group">
-                <label for="contact_sensor_{{ i }}_id">Device {{ i }} ID:</label>
+                <label for="contact_sensor_{{ i }}_id" class="tooltip" data-tooltip="Enter a SwitchBot Contact Sensor Device ID to trigger Modifier {{ i }} when opened, OR leave blank and use the API endpoint: GET/POST {{ request.host_url }}trigger{{ i }}">Sensor {{ i }} ID:</label>
                 <div class="input-with-test-button">
                     <input type="text" id="contact_sensor_{{ i }}_id" name="contact_sensor_{{ i }}_id"
                            value="{{ settings.get('contact_sensors', {}).get('sensor_' + i|string + '_id', '') }}"
@@ -93,10 +93,10 @@
         </div>
 
         <div class="section">
-            <h3>🔧 Custom Accessories</h3>
+            <h3>Custom Accessories</h3>
             {% for i in range(1, 5) %}
             <div class="form-group">
-                <label for="custom_{{ i }}_endpoint">Endpoint {{ i }}:</label>
+                <label for="custom_{{ i }}_endpoint" class="tooltip" data-tooltip="HTTP API endpoint URL for custom accessory {{ i }}. Click PAYLOAD to configure request method and JSON body">Endpoint {{ i }}:</label>
                 <div class="custom-endpoint-controls">
                     <input type="url" id="custom_{{ i }}_endpoint" name="custom_{{ i }}_endpoint"
                            value="{{ settings.get('custom_accessories', {}).get('endpoint_' + i|string, '') }}"
@@ -116,101 +116,96 @@
         </div>
     </div>
 
-    <!-- AFD MagLock Device -->
-    <div class="section">
-        <h3>🔒 AFD MAGLOCK DEVICE</h3>
-        <div class="form-group maglock-form-group">
-            <label for="lock_engage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Lock:</label>
-            <div class="input-with-test-button">
-                <input type="url" id="lock_engage_webhook" name="lock_engage_webhook"
-                       value="{{ settings.get('lock', {}).get('engage_webhook', '') }}"
-                       placeholder="https://us-apia.coolkit.cc/v2/">
-                {% if settings.get('interface', {}).get('developer_mode', False) %}
-                <button type="button" class="test-button" onclick="testMagLock('engage')">T</button>
-                {% endif %}
+    <!-- AFD MagLock Device and Kill Switch Side by Side -->
+    <div class="settings-layout">
+        <div class="section">
+            <h3>AFD MAGLOCK DEVICE</h3>
+            <div class="form-group">
+                <label for="lock_engage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Lock:</label>
+                <div class="input-with-test-button">
+                    <input type="url" id="lock_engage_webhook" name="lock_engage_webhook"
+                           value="{{ settings.get('lock', {}).get('engage_webhook', '') }}"
+                           placeholder="https://us-apia.coolkit.cc/v2/">
+                    {% if settings.get('interface', {}).get('developer_mode', False) %}
+                    <button type="button" class="test-button" onclick="testMagLock('engage')">T</button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="lock_disengage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Unlock:</label>
+                <div class="input-with-test-button">
+                    <input type="url" id="lock_disengage_webhook" name="lock_disengage_webhook"
+                           value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}"
+                           placeholder="https://us-apia.coolkit.cc/v2/">
+                    {% if settings.get('interface', {}).get('developer_mode', False) %}
+                    <button type="button" class="test-button" onclick="testMagLock('disengage')">T</button>
+                    {% endif %}
+                </div>
             </div>
         </div>
-        <div class="form-group maglock-form-group">
-            <label for="lock_disengage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Unlock:</label>
-            <div class="input-with-test-button">
-                <input type="url" id="lock_disengage_webhook" name="lock_disengage_webhook"
-                       value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}"
-                       placeholder="https://us-apia.coolkit.cc/v2/">
-                {% if settings.get('interface', {}).get('developer_mode', False) %}
-                <button type="button" class="test-button" onclick="testMagLock('disengage')">T</button>
-                {% endif %}
+
+        <div class="section">
+            <h3>Kill Switch</h3>
+            <div class="form-group">
+                <label for="killswitch_plug_id" class="tooltip" data-tooltip="SwitchBot Plug Device ID - when turned OFF, immediately stops the scene. Pair with a physical remote button in the SwitchBot app for emergency stop functionality">Plug ID:</label>
+                <div class="input-with-test-button">
+                    <input type="text" id="killswitch_plug_id" name="killswitch_plug_id"
+                           value="{{ settings.get('killswitch', {}).get('plug_id', '') }}"
+                           placeholder="Enter Device ID">
+                    {% if settings.get('interface', {}).get('developer_mode', False) %}
+                    <button type="button" class="test-button" onclick="testKillSwitch('plug')">T</button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="killswitch_api_endpoint" class="tooltip" data-tooltip="Optional HTTP endpoint called when emergency stop is triggered (e.g., to notify external systems or trigger additional safety actions)">Endpoint:</label>
+                <div class="input-with-test-button">
+                    <input type="url" id="killswitch_api_endpoint" name="killswitch_api_endpoint"
+                           value="{{ settings.get('killswitch', {}).get('api_endpoint', '') }}"
+                           placeholder="https://example.com/api/killswitch">
+                    {% if settings.get('interface', {}).get('developer_mode', False) %}
+                    <button type="button" class="test-button" onclick="testKillSwitch('api')">T</button>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Interface Preferences -->
     <div class="section">
-        <h3>🖥️ Interface Preferences</h3>
+        <h3>Interface Preferences</h3>
         <div class="interface-checkboxes">
             <div class="form-group">
-                <label for="popup_notifications" class="enable-checkbox">
-                    <input type="checkbox" id="popup_notifications" name="popup_notifications"
-                           {% if settings.get('interface', {}).get('popup_notifications', False) %}checked{% endif %}>
-                    Enable Popup Notifications
-                </label>
+                <input type="checkbox" id="popup_notifications" name="popup_notifications"
+                       {% if settings.get('interface', {}).get('popup_notifications', False) %}checked{% endif %}>
+                <label for="popup_notifications" class="enable-checkbox tooltip" data-tooltip="Show large visual popups when devices are activated during scenes">Enable Popup Notifications</label>
             </div>
             <div class="form-group">
-                <label for="audio_notifications" class="enable-checkbox">
-                    <input type="checkbox" id="audio_notifications" name="audio_notifications"
-                           {% if settings.get('interface', {}).get('audio_notifications', False) %}checked{% endif %}>
-                    Enable Audio
-                </label>
+                <input type="checkbox" id="audio_notifications" name="audio_notifications"
+                       {% if settings.get('interface', {}).get('audio_notifications', False) %}checked{% endif %}>
+                <label for="audio_notifications" class="enable-checkbox tooltip" data-tooltip="Enable text-to-speech audio announcements for device actions and scene events">Enable Audio</label>
             </div>
             <div class="form-group">
-                <label for="developer_mode" class="enable-checkbox">
-                    <input type="checkbox" id="developer_mode" name="developer_mode"
-                           {% if settings.get('interface', {}).get('developer_mode', False) %}checked{% endif %}>
-                    Developer Mode
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <!-- Kill Switch -->
-    <div class="section">
-        <h3>🔴 Kill Switch</h3>
-        <div class="form-group">
-            <label for="killswitch_plug_id">SwitchBot Plug ID:</label>
-            <div class="input-with-test-button">
-                <input type="text" id="killswitch_plug_id" name="killswitch_plug_id"
-                       value="{{ settings.get('killswitch', {}).get('plug_id', '') }}"
-                       placeholder="Enter SwitchBot Plug Device ID">
-                {% if settings.get('interface', {}).get('developer_mode', False) %}
-                <button type="button" class="test-button" onclick="testKillSwitch('plug')">T</button>
-                {% endif %}
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="killswitch_api_endpoint">Optional API Endpoint:</label>
-            <div class="input-with-test-button">
-                <input type="url" id="killswitch_api_endpoint" name="killswitch_api_endpoint"
-                       value="{{ settings.get('killswitch', {}).get('api_endpoint', '') }}"
-                       placeholder="https://example.com/api/killswitch">
-                {% if settings.get('interface', {}).get('developer_mode', False) %}
-                <button type="button" class="test-button" onclick="testKillSwitch('api')">T</button>
-                {% endif %}
+                <input type="checkbox" id="developer_mode" name="developer_mode"
+                       {% if settings.get('interface', {}).get('developer_mode', False) %}checked{% endif %}>
+                <label for="developer_mode" class="enable-checkbox tooltip" data-tooltip="Enable developer features including dry run mode and test buttons for all devices">Developer Mode</label>
             </div>
         </div>
     </div>
 
     <div class="control-panel">
-        <button type="submit" class="btn btn-primary">💾 SAVE SETTINGS</button>
-        <button type="button" class="btn btn-secondary" onclick="checkForUpdates()">🔍 CHECK FOR UPDATES</button>
+        <button type="submit" class="btn btn-primary">SAVE SETTINGS</button>
+        <button type="button" class="btn btn-secondary" onclick="checkForUpdates()">CHECK FOR UPDATES</button>
     </div>
 </form>
 
 <!-- Update message display -->
 <div id="update-message" class="section" style="display: none; margin-top: 20px;">
-    <h3>📦 Update Status</h3>
+    <h3>Update Status</h3>
     <p id="update-text"></p>
     <div id="update-actions" class="control-panel" style="display: none;">
-        <button type="button" class="btn btn-success" onclick="performUpdate()">🔄 UPDATE</button>
-        <button type="button" class="btn btn-secondary" onclick="cancelUpdate()">❌ CANCEL</button>
+        <button type="button" class="btn btn-success" onclick="performUpdate()">UPDATE</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelUpdate()">CANCEL</button>
     </div>
 </div>
 
@@ -218,8 +213,8 @@
 <div id="payload-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>🔧 Edit Payload for Endpoint <span id="endpoint-number"></span></h3>
-            <button type="button" class="close-button" onclick="closePayloadModal()">✖</button>
+            <h3>Edit Payload for Endpoint <span id="endpoint-number"></span></h3>
+            <button type="button" class="close-button" onclick="closePayloadModal()">X</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
@@ -238,9 +233,9 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="savePayload()">💾 SAVE</button>
-            <button type="button" class="btn btn-success" onclick="testPayload()">🧪 TEST</button>
-            <button type="button" class="btn btn-secondary" onclick="closePayloadModal()">❌ CANCEL</button>
+            <button type="button" class="btn btn-primary" onclick="savePayload()">SAVE</button>
+            <button type="button" class="btn btn-success" onclick="testPayload()">TEST</button>
+            <button type="button" class="btn btn-secondary" onclick="closePayloadModal()">CANCEL</button>
         </div>
     </div>
 </div>
@@ -249,7 +244,7 @@
 function checkForUpdates() {
     const button = document.querySelector('button[onclick="checkForUpdates()"]');
     button.disabled = true;
-    button.textContent = '🔄 CHECKING...';
+    button.textContent = 'CHECKING...';
     
     fetch('/check_updates')
         .then(response => response.json())
@@ -270,7 +265,7 @@ function checkForUpdates() {
         })
         .finally(() => {
             button.disabled = false;
-            button.textContent = '🔍 CHECK FOR UPDATES';
+            button.textContent = 'CHECK FOR UPDATES';
         });
 }
 
@@ -296,7 +291,7 @@ function performUpdate() {
         .finally(() => {
             updateButton.disabled = false;
             cancelButton.disabled = false;
-            updateButton.textContent = '🔄 UPDATE';
+            updateButton.textContent = 'UPDATE';
         });
 }
 
@@ -414,12 +409,12 @@ function testContactSensor(sensorNumber) {
     button.disabled = true;
     button.textContent = '...';
 
-    fetch('/test_contact_sensor', {
+    // Call the trigger endpoint to activate modifiers (works when scene is running)
+    fetch('/trigger' + sensorNumber, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sensor_number: sensorNumber })
+        }
     })
     .then(response => response.json())
     .then(data => {
@@ -566,6 +561,58 @@ function testKillSwitch(type) {
         button.disabled = false;
         button.textContent = originalText;
     });
+}
+
+// Handle settings form submission with AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const settingsForm = document.getElementById('settings-form');
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Get form data
+            const formData = new FormData(this);
+
+            // Submit via AJAX
+            fetch('/save_settings', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showSaveSuccess();
+                } else {
+                    throw new Error('Save failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Could add error popup here if needed
+            });
+        });
+    }
+});
+
+// Show save success popup
+function showSaveSuccess() {
+    const popup = document.getElementById('save-success-popup');
+    if (popup) {
+        // Reset to default save message
+        popup.innerHTML = 'Save successful';
+        popup.classList.add('show');
+        // Hide after 2 seconds
+        setTimeout(() => {
+            popup.classList.remove('show');
+            popup.classList.add('hide');
+            // Clean up hide class after animation
+            setTimeout(() => {
+                popup.classList.remove('hide');
+            }, 400);
+        }, 2000);
+    }
 }
 </script>
 {% endblock %}
