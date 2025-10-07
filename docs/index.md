@@ -1,6 +1,6 @@
 # PiLock User Guide
 
-![PiLock-Dashboard-V1](screenshots/PiLock-Dashboard-V1.jpg.webp)
+![PiLock-Dashboard-V1](screenshots/PiLock-Dashboard-V1.1.jpg.webp)
 
 ## Table of Contents
 
