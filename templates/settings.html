@@ -82,8 +82,7 @@
                 <label for="contact_sensor_{{ i }}_id" class="tooltip" data-tooltip="Enter a SwitchBot Contact Sensor Device ID to trigger Modifier {{ i }} when opened, OR leave blank and use the API endpoint: GET/POST {{ request.host_url }}trigger{{ i }}">Sensor {{ i }} ID:</label>
                 <div class="input-with-test-button">
                     <input type="text" id="contact_sensor_{{ i }}_id" name="contact_sensor_{{ i }}_id"
-                           value="{{ settings.get('contact_sensors', {}).get('sensor_' + i|string + '_id', '') }}"
-                           placeholder="Enter SwitchBot Contact Sensor Device ID">
+                           value="{{ settings.get('contact_sensors', {}).get('sensor_' + i|string + '_id', '') }}">
                     {% if settings.get('interface', {}).get('developer_mode', False) %}
                     <button type="button" class="test-button" onclick="testContactSensor({{ i }})">T</button>
                     {% endif %}
@@ -99,8 +98,7 @@
                 <label for="custom_{{ i }}_endpoint" class="tooltip" data-tooltip="HTTP API endpoint URL for custom accessory {{ i }}. Click PAYLOAD to configure request method and JSON body">Endpoint {{ i }}:</label>
                 <div class="custom-endpoint-controls">
                     <input type="url" id="custom_{{ i }}_endpoint" name="custom_{{ i }}_endpoint"
-                           value="{{ settings.get('custom_accessories', {}).get('endpoint_' + i|string, '') }}"
-                           placeholder="https://api.example.com/endpoint">
+                           value="{{ settings.get('custom_accessories', {}).get('endpoint_' + i|string, '') }}">
                     <button type="button" class="btn btn-secondary" onclick="editPayload({{ i }})">PAYLOAD</button>
                     {% if settings.get('interface', {}).get('developer_mode', False) %}
                     <button type="button" class="test-button" onclick="testCustomAccessory({{ i }})">T</button>
@@ -124,8 +122,7 @@
                 <label for="lock_engage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Lock:</label>
                 <div class="input-with-test-button">
                     <input type="url" id="lock_engage_webhook" name="lock_engage_webhook"
-                           value="{{ settings.get('lock', {}).get('engage_webhook', '') }}"
-                           placeholder="https://us-apia.coolkit.cc/v2/">
+                           value="{{ settings.get('lock', {}).get('engage_webhook', '') }}">
                     {% if settings.get('interface', {}).get('developer_mode', False) %}
                     <button type="button" class="test-button" onclick="testMagLock('engage')">T</button>
                     {% endif %}
@@ -135,8 +132,7 @@
                 <label for="lock_disengage_webhook" class="tooltip" data-tooltip="eWeLink webhook url. Links will start with https://us-apia.coolkit.cc/v2/">Unlock:</label>
                 <div class="input-with-test-button">
                     <input type="url" id="lock_disengage_webhook" name="lock_disengage_webhook"
-                           value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}"
-                           placeholder="https://us-apia.coolkit.cc/v2/">
+                           value="{{ settings.get('lock', {}).get('disengage_webhook', '') }}">
                     {% if settings.get('interface', {}).get('developer_mode', False) %}
                     <button type="button" class="test-button" onclick="testMagLock('disengage')">T</button>
                     {% endif %}
@@ -150,8 +146,7 @@
                 <label for="killswitch_plug_id" class="tooltip" data-tooltip="SwitchBot Plug Device ID - when turned OFF, immediately stops the scene. Pair with a physical remote button in the SwitchBot app for emergency stop functionality">Plug ID:</label>
                 <div class="input-with-test-button">
                     <input type="text" id="killswitch_plug_id" name="killswitch_plug_id"
-                           value="{{ settings.get('killswitch', {}).get('plug_id', '') }}"
-                           placeholder="Enter Device ID">
+                           value="{{ settings.get('killswitch', {}).get('plug_id', '') }}">
                     {% if settings.get('interface', {}).get('developer_mode', False) %}
                     <button type="button" class="test-button" onclick="testKillSwitch('plug')">T</button>
                     {% endif %}
@@ -161,8 +156,7 @@
                 <label for="killswitch_api_endpoint" class="tooltip" data-tooltip="Optional HTTP endpoint called when emergency stop is triggered (e.g., to notify external systems or trigger additional safety actions)">Endpoint:</label>
                 <div class="input-with-test-button">
                     <input type="url" id="killswitch_api_endpoint" name="killswitch_api_endpoint"
-                           value="{{ settings.get('killswitch', {}).get('api_endpoint', '') }}"
-                           placeholder="https://example.com/api/killswitch">
+                           value="{{ settings.get('killswitch', {}).get('api_endpoint', '') }}">
                     {% if settings.get('interface', {}).get('developer_mode', False) %}
                     <button type="button" class="test-button" onclick="testKillSwitch('api')">T</button>
                     {% endif %}
