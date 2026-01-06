@@ -2,7 +2,7 @@
 
 ![PiLock-Dashboard-V1](screenshots/PiLock-Dashboard-V1.1.jpg.webp)
 
-**A Flask-based web application for managing and orchestrating smart home scenes with SwitchBot, PiShock, and custom accessories. Run locally on any computer with Python 3.**
+
 
 ## Table of Contents
 
