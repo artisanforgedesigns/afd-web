@@ -2,6 +2,8 @@
 
 ![PiLock-Dashboard-V1](screenshots/PiLock-Dashboard-V1.1.jpg.webp)
 
+**A Flask-based web application for managing and orchestrating smart home scenes with SwitchBot, PiShock, and custom accessories. Run locally on any computer with Python 3.**
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
@@ -15,14 +17,35 @@
 
 ## Getting Started
 
-### First Run
+### Local Development Setup
 
-1. Plug your device into a standard USB power supply and wait for the PiLock WiFi network to appear (This may take up to 60 seconds)
-2. Connect to the PiLock WiFi network and wait for the captive portal page to appear. This may take up to 120 seconds, but you can also navigate directly by typing: `http://192.168.4.1` (or the router address shown in your network info)
-3. Select your WiFi network (must be 2.4 GHz), enter your password, click "Connect" and wait a few minutes for the board to reboot and connect
-4. Reconnect your device to your home network, wait a minute for PiLock to finish booting, then navigate to: `http://pilock.local:5001`
-   - If this doesn't work, check your router's device list to find the IP address, or use a local network scanner tool
-5. Done! PiLock will automatically connect to your configured network on future boots. If your network changes or connection fails, the WiFi portal will re-appear at boot
+1. **Install Python 3**:
+   - Download and install Python 3.7 or higher from [python.org](https://www.python.org/downloads/)
+   - Verify installation by running: `python3 --version`
+
+2. **Clone or download the project**:
+   - Clone the repository or download the source code to your local machine
+   - Navigate to the project directory in your terminal
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the application**:
+   ```bash
+   python app.py
+   ```
+   - By default, the server runs on port 5001
+   - To use a different port: `python app.py --port 8080`
+
+5. **Access the application**:
+   - Open your web browser and navigate to: `http://localhost:5001`
+   - The application should now be running locally
+
+6. **First-time setup**:
+   - Click **SETTINGS** to configure your devices and API credentials
+   - See [Settings Configuration](#settings-configuration) below for details
 
 ---
 
@@ -93,7 +116,7 @@ Contact sensors trigger **Scene Modifiers** when opened (closed → open transit
 **Option 2: HTTP API Endpoints**
 - Leave the Device ID field blank
 - Use the API endpoint shown in the tooltip to trigger the modifier remotely
-- Format: `GET` or `POST` to `http://pilock.local:5001/trigger1` (through `/trigger4`)
+- Format: `GET` or `POST` to `http://localhost:5001/trigger1` (through `/trigger4`)
 
 **Configuration:**
 - **Sensor 1-4 ID**: SwitchBot Contact Sensor Device IDs (optional if using API endpoints)
@@ -420,7 +443,7 @@ The header timer (replaces AFD logo when scene is running):
 
 2. **Configure the trigger in Settings:**
    - Enter SwitchBot Contact Sensor Device ID in "Sensor 1 ID"
-   - OR leave blank and use API endpoint: `http://pilock.local:5001/trigger1`
+   - OR leave blank and use API endpoint: `http://localhost:5001/trigger1`
 
 3. **Run a scene:**
    - Start scene with PiShock 2 initially disabled
@@ -499,7 +522,7 @@ A: Check:
 - Endpoint URL is correct and accessible
 - Payload JSON is valid (test in PAYLOAD editor)
 - API method is correct (GET, POST, etc.)
-- Endpoint accepts requests from PiLock's IP
+- Endpoint is accessible from localhost
 - Test button (Developer Mode) shows success
 
 ### Scene Behavior
